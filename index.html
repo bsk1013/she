@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit Tool Mobile Save Mail + RAWDB XLSX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body{font-family:Arial,'Noto Sans KR',sans-serif;background:#0f172a;color:#e5e7eb;margin:0;padding:20px}
+  .card{background:#111827;border:1px solid #374151;border-radius:12px;padding:16px;margin-bottom:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input,select,button,textarea{background:#1f2937;color:#fff;border:1px solid #374151;border-radius:8px;padding:8px}
+  button{cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #374151;padding:8px;text-align:left;vertical-align:top}
+  .small{font-size:12px;color:#94a3b8}
+  .ok{color:#86efac}.warn{color:#fca5a5}
+  textarea{min-width:150px;min-height:54px}
+  .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tabbtn{padding:10px 14px;border:1px solid #475569;border-radius:10px;background:#111827}
+  .tabbtn.active{outline:2px solid #60a5fa}
+  .tabpage{display:none}.tabpage.active{display:block}
+  .badge{display:inline-block;padding:3px 8px;border:1px solid #475569;border-radius:999px;font-size:11px;margin-right:6px}
+  .hiddenInput{display:none}
+  .linkedThumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .linkedThumb{position:relative;display:inline-block}
+  .linkedThumb img{width:96px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #475569;background:#020617}
+  .unlinkBtn{position:absolute;right:-6px;top:-6px;width:20px;height:20px;border-radius:50%;padding:0;border:none;background:#ef4444;color:#fff;font-weight:700;cursor:pointer}
+  .photoStripWrap{border:1px dashed #475569;border-radius:12px;background:#0b1220;padding:10px}
+  .photoStrip{display:flex;gap:10px;overflow-x:auto}
+  .photoTile{width:132px;flex:0 0 auto;border:1px solid #374151;border-radius:10px;padding:8px;background:#111827;position:relative}
+  .photoTile img.thumb{width:100%;height:84px;object-fit:cover;border-radius:8px;background:#020617}
+  .tileDeleteBtn{position:absolute;right:4px;top:4px;width:22px;height:22px;border-radius:50%;padding:0;border:none;background:#ef4444;color:#fff;font-weight:700;line-height:22px;text-align:center;z-index:3}
+  .tileName{font-size:12px;color:#cbd5e1;margin-top:6px;line-height:1.3;word-break:break-all}
+  .tileActions{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .dropCard{border:1px solid #374151;border-radius:12px;padding:12px;margin-bottom:12px;background:#0f172a}
+  .dropCard.dragover{outline:2px dashed #60a5fa;background:#111827}
+  .viewerWrap{display:grid;grid-template-columns:1.7fr 1fr;gap:12px}
+  @media (max-width:1000px){.viewerWrap{grid-template-columns:1fr}}
+  .viewerStage{position:relative;min-height:480px;border:1px solid #374151;border-radius:12px;overflow:hidden;background:#000}
+  #drawCanvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none}
+  #laserDot{position:absolute;width:18px;height:18px;border-radius:50%;background:rgba(255,0,0,.9);box-shadow:0 0 16px rgba(255,0,0,.95);pointer-events:none;display:none;transform:translate(-50%,-50%)}
+  .viewerThumbBar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;overflow-x:auto;padding:10px;background:rgba(2,6,23,.88);border-top:1px solid #374151}
+  .viewerThumbBar img{width:110px;height:74px;object-fit:cover;border-radius:8px;border:2px solid transparent;background:#020617;cursor:pointer;flex:0 0 auto}
+  .viewerThumbBar img.active{border-color:#60a5fa}
+  .metaPanel{border:1px solid #374151;border-radius:12px;padding:14px;background:#111827}
+  .metaTitle{font-size:20px;font-weight:700;margin-bottom:10px}
+  .metaText{white-space:pre-wrap;line-height:1.5}
+  .statusbar{position:absolute;right:12px;bottom:94px;background:rgba(17,24,39,.9);padding:6px 10px;border-radius:10px;font-size:12px;border:1px solid #374151}
+  #hoverPreview{
+    position:fixed; display:none; z-index:9999;
+    width:240px; height:170px; pointer-events:none;
+    border:1px solid #475569; border-radius:12px; overflow:hidden;
+    background:#020617; box-shadow:0 16px 40px rgba(0,0,0,.5)
+  }
+  #hoverPreview img{width:100%;height:100%;object-fit:cover}
+  pre{white-space:pre-wrap;background:#0b1220;border:1px solid #374151;border-radius:10px;padding:10px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="card">
+  <h2 style="margin-top:0">Audit Tool 통합 데모</h2>
+  <div class="small">중간저장 ZIP + 메일 보내기 + RAW DB XLSX 다운로드(연결 사진명 포함)</div>
+</div>
+
+<div class="tabbar">
+  <button class="tabbtn active" onclick="showTab('audit', this)">점검 입력</button>
+  <button class="tabbtn" onclick="showTab('photos', this); renderPhotosHub()">사진 연결</button>
+  <button class="tabbtn" onclick="showTab('briefing', this); rebuildBriefingItems(); renderBriefingList(); loadCurrentBriefingPhoto()">강평 브리핑</button>
+</div>
+
+<div id="tab-audit" class="tabpage active">
+  <div class="card">
+    <div class="row">
+      <button onclick="clearAll()">초기화</button>
+      <button onclick="loadSample()">임의 데이터 넣기</button>
+      <button onclick="addRow()">행 추가</button>
+      <button onclick="downloadRawdbXlsx()">RAW DB XLSX 다운로드</button>
+      <button onclick="exportSessionZip()">중간저장 ZIP</button>
+      <button onclick="sendSessionZipByEmail()">중간저장 ZIP 보내기</button>
+      <label style="display:inline-flex;align-items:center;gap:8px">
+        <span>중간저장 ZIP 불러오기</span>
+        <input id="sessionZipFile" type="file" accept=".zip" onchange="importSessionZip(event)">
+      </label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div>점검자 이메일 <input id="recipientEmail" type="email" placeholder="example@company.com"></div>
+    </div>
+    <div class="small" style="margin-top:8px">중간저장 ZIP 보내기는 메일 작성창만 열고, ZIP 파일은 메일 앱에서 직접 첨부해야 합니다.</div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>평가년도 <input id="evalYear" value=""></div>
+      <div>평가반기 <select id="evalHalf"><option value="">선택</option><option>상반기</option><option>하반기</option></select></div>
+      <div>생산/기타 <select id="division" onchange="updateBu()"><option value="">선택</option><option>생산</option><option>물류</option><option>영업</option><option>기술원</option></select></div>
+      <div>BU <select id="bu" onchange="updateSite()"><option value="">선택</option></select></div>
+      <div>사업장명 <select id="site" onchange="validateHeader()"><option value="">선택</option></select></div>
+    </div>
+    <div class="small" id="headerWarn" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>category6</th>
+          <th>소분류</th>
+          <th>주요내용</th>
+          <th>배점</th>
+          <th>결과</th>
+          <th>위험분류</th>
+          <th>사진태그</th>
+          <th>촬영/직접연결</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="tab-photos" class="tabpage">
+  <div class="card">
+    <div class="row">
+      <label style="display:inline-flex;align-items:center;gap:8px">
+        <span>미연결 사진 불러오기</span>
+        <input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)">
+      </label>
+      <button onclick="deleteAllUnlinkedPhotos()">미연결 전체 삭제</button>
+    </div>
+    <div class="small" id="photoWarn" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">미연결 사진</h3>
+      <div class="small">드래그앤드롭 또는 드롭다운 직접연결</div>
+    </div>
+    <div class="photoStripWrap">
+      <div id="unlinkedPhotos" class="photoStrip"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">점검항목별 연결 상태</h3>
+    <div id="dropCards"></div>
+  </div>
+</div>
+
+<div id="tab-briefing" class="tabpage">
+  <div class="card">
+    <div class="row">
+      <button onclick="prevItem()">이전 항목</button>
+      <button onclick="nextItem()">다음 항목</button>
+      <button onclick="prevPhotoInItem()">← 사진</button>
+      <button onclick="nextPhotoInItem()">사진 →</button>
+      <button onclick="setTool('move')">이동</button>
+      <button onclick="setTool('laser')">레이저</button>
+      <button onclick="setTool('pen')">펜</button>
+      <button onclick="clearDrawing()">펜 지우기</button>
+      <button onclick="zoomIn()">확대</button>
+      <button onclick="zoomOut()">축소</button>
+      <button onclick="resetView()">원위치</button>
+      <select id="penColor" onchange="setPenColor(this.value)"><option value="#ff0000">빨강</option><option value="#ffff00">노랑</option><option value="#00b7ff">파랑</option><option value="#00ff88">초록</option></select>
+      <select id="penWidth" onchange="setPenWidth(this.value)"><option value="2">2px</option><option value="4" selected>4px</option><option value="6">6px</option><option value="8">8px</option></select>
+    </div>
+  </div>
+
+  <div class="viewerWrap">
+    <div class="viewerStage" id="viewerStage">
+      <canvas id="drawCanvas"></canvas>
+      <div id="laserDot"></div>
+      <div class="statusbar" id="viewerStatus">도구: 이동</div>
+      <div id="viewerThumbBar" class="viewerThumbBar"></div>
+    </div>
+    <div class="metaPanel">
+      <div class="metaTitle" id="metaTitle">-</div>
+      <div style="margin-bottom:10px"><span class="badge" id="metaResult">-</span><span class="badge" id="metaCategory">-</span></div>
+      <div class="small">항목</div><div id="metaRowNo" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">위험분류</div><div id="metaRisk" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">주요내용</div><div id="metaText" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">사진태그</div><div id="metaTag" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">사진</div><div id="metaPhotoIndex" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">연결 항목 목록</div><div id="briefingList" class="metaText">-</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">상태 로그</h3>
+  <pre id="logBox">준비 완료</pre>
+</div>
+
+<div id="hoverPreview"><img id="hoverPreviewImg" src=""></div>
+
+<script>
+const ORG = {'생산':{'식품':['순창','천안','기흥','오산','구미','단양','이천'],'소재':['전분당','바이오','라이신'],'김치CIC':['횡성','거창'],'계열사':['대상델리하임(성남)','대상다이브스(논산)','대상푸드플러스(천안)','대상푸드플러스(목포)','디유푸드(울진)','신안천일염(신안)']},'물류':{'물류':['용인센터','양지센터','송추센터']},'영업':{'영업':['청주','고양','원주','오정']},'기술원':{'기술원':['기술원']}};
+const CAT6 = ['안전보건관리체제','안전보건교육','유해위험방지 조치','도급 시 산업재해 예방','유해위험물질에 대한 조치','근로자 보건관리'];
+const RISK7 = ['기계설비적요인','전기적요인','작업환경요인','작업특성요인','관리적요인','화학물질적요인','생물학적요인'];
+
+let rows = [];
+let photos = []; // {id,name,url,rowIndex,file?,blob?}
+let briefingItems = [];
+let currentItemIndex = 0;
+let currentPhotoIndex = 0;
+let lastExportedZipName = '';
+
+// viewer state
+let currentTool = 'move', currentScale = 1, translateX = 0, translateY = 0, dragging = false, dragStartX = 0, dragStartY = 0;
+let imageBitmap = null, imageNaturalWidth = 0, imageNaturalHeight = 0;
+let penColor = '#ff0000', penWidth = 4, drawing = false, currentStroke = null, strokes = [];
+
+function log(msg){ logBox.textContent = msg; }
+function showTab(name, btn){
+  document.querySelectorAll('.tabpage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='photos') renderPhotosHub();
+  if(name==='briefing'){ rebuildBriefingItems(); renderBriefingList(); loadCurrentBriefingPhoto(); }
+}
+function updateBu(){ const d=division.value; const bus=d?Object.keys(ORG[d]):[]; bu.innerHTML='<option value="">선택</option>'+bus.map(x=>`<option>${x}</option>`).join(''); site.innerHTML='<option value="">선택</option>'; validateHeader(); }
+function updateSite(){ const d=division.value,b=bu.value; const sites=(d&&b&&ORG[d]&&ORG[d][b])?ORG[d][b]:[]; site.innerHTML='<option value="">선택</option>'+sites.map(x=>`<option>${x}</option>`).join(''); validateHeader(); }
+function setSelectValue(selectEl, value){ if(!value) return; const opts=Array.from(selectEl.options).map(o=>o.value||o.text); if(opts.includes(value)) selectEl.value=value; }
+function validateHeader(){ const miss=[]; if(!evalYear.value) miss.push('평가년도'); if(!evalHalf.value) miss.push('평가반기'); if(!division.value) miss.push('생산/기타'); if(!bu.value) miss.push('BU'); if(!site.value) miss.push('사업장명'); headerWarn.innerHTML=miss.length?`<span class="warn">필수 입력 누락: ${miss.join(', ')}</span>`:`<span class="ok">상단 필수값 입력 완료</span>`; return miss.length===0; }
+
+function addRow(data){ rows.push(data||{category6:'안전보건교육',title:'',mainText:'',score:1,result:'보완',riskType:'관리적요인',photoTag:''}); renderRows(); }
+function delRow(i){
+  rows.splice(i,1);
+  photos.forEach(p=>{ if(String(p.rowIndex)===String(i)) p.rowIndex=''; else if(p.rowIndex!=='' && Number(p.rowIndex)>i) p.rowIndex=String(Number(p.rowIndex)-1); });
+  renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+}
+function clearAll(){
+  evalYear.value=''; evalHalf.value=''; division.value=''; bu.innerHTML='<option value="">선택</option>'; site.innerHTML='<option value="">선택</option>'; recipientEmail.value='';
+  rows=[]; photos.forEach(p=>{ try{URL.revokeObjectURL(p.url);}catch(e){} }); photos=[];
+  lastExportedZipName='';
+  renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); validateHeader(); clearViewerCanvas();
+  log('초기화 완료');
+}
+function loadSample(){
+  evalYear.value='2026'; evalHalf.value='상반기'; division.value='생산'; updateBu(); bu.value='식품'; updateSite(); site.value='천안';
+  rows=[
+    {category6:'안전보건관리체제',title:'산업안전보건위원회 운영',mainText:'운영 수준 양호',score:2,result:'적정',riskType:'관리적요인',photoTag:'위원회'},
+    {category6:'안전보건교육',title:'특별교육 이수 및 기록',mainText:'교육 이수 기록 일부 누락',score:1,result:'보완',riskType:'관리적요인',photoTag:'교육'},
+    {category6:'유해위험방지 조치',title:'개구부 방호조치',mainText:'개구부 주변 임시작업발판 상태 미흡',score:2,result:'보완',riskType:'기계설비적요인',photoTag:'개구부'}
+  ];
+  renderRows(); validateHeader(); log('임의 데이터 로드 완료');
+}
+
+function renderRows(){
+  const tb=document.querySelector('#tbl tbody');
+  tb.innerHTML=rows.map((r,i)=>`
+    <tr data-row="${i}">
+      <td><select class="f-category6">${CAT6.map(x=>`<option ${x===r.category6?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td><textarea class="f-title">${r.title||''}</textarea></td>
+      <td><textarea class="f-mainText">${r.mainText||''}</textarea></td>
+      <td><input type="number" class="f-score" value="${r.score}" style="width:70px"></td>
+      <td><select class="f-result"><option ${r.result==='적정'?'selected':''}>적정</option><option ${r.result==='보완'?'selected':''}>보완</option><option ${r.result==='해당없음'?'selected':''}>해당없음</option></select></td>
+      <td><select class="f-riskType">${RISK7.map(x=>`<option ${x===r.riskType?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td><input class="f-photoTag" value="${r.photoTag||''}"></td>
+      <td>
+        <div class="row">
+          <button onclick="triggerCamera(${i})">사진 촬영</button>
+          <button onclick="triggerGallery(${i})">사진 선택</button>
+        </div>
+        <input class="hiddenInput" id="cameraInput_${i}" type="file" accept="image/*" capture="environment" onchange="attachFilesToRow(event, ${i}, true)">
+        <input class="hiddenInput" id="galleryInput_${i}" type="file" accept="image/*" multiple onchange="attachFilesToRow(event, ${i}, false)">
+        <div class="linkedThumbs">
+          ${linkedPhotosForRow(i).map(p=>`<div class="linkedThumb"><img src="${p.url}" title="${p.name}"><button class="unlinkBtn" onclick="unlinkPhoto('${p.id}')">×</button></div>`).join('') || '<div class="small">이 행에 연결된 사진 없음</div>'}
+        </div>
+      </td>
+      <td><button onclick="delRow(${i})">삭제</button></td>
+    </tr>
+  `).join('');
+  bindRowInputs();
+}
+function bindRowInputs(){
+  document.querySelectorAll('#tbl tbody tr').forEach(tr=>{
+    const i=Number(tr.dataset.row);
+    const sync=()=>{
+      rows[i].category6=tr.querySelector('.f-category6').value;
+      rows[i].title=tr.querySelector('.f-title').value;
+      rows[i].mainText=tr.querySelector('.f-mainText').value;
+      rows[i].score=Number(tr.querySelector('.f-score').value||0);
+      rows[i].result=tr.querySelector('.f-result').value;
+      rows[i].riskType=tr.querySelector('.f-riskType').value;
+      rows[i].photoTag=tr.querySelector('.f-photoTag').value;
+      renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+    };
+    tr.querySelectorAll('input, textarea, select').forEach(el=>{ el.addEventListener('input',sync); el.addEventListener('change',sync); el.addEventListener('blur',sync); });
+  });
+}
+function syncRowsFromTable(){
+  document.querySelectorAll('#tbl tbody tr').forEach(tr=>{
+    const i=Number(tr.dataset.row);
+    rows[i].category6=tr.querySelector('.f-category6').value;
+    rows[i].title=tr.querySelector('.f-title').value;
+    rows[i].mainText=tr.querySelector('.f-mainText').value;
+    rows[i].score=Number(tr.querySelector('.f-score').value||0);
+    rows[i].result=tr.querySelector('.f-result').value;
+    rows[i].riskType=tr.querySelector('.f-riskType').value;
+    rows[i].photoTag=tr.querySelector('.f-photoTag').value;
+  });
+}
+
+// row camera / gallery
+function triggerCamera(rowIndex){ document.getElementById(`cameraInput_${rowIndex}`).click(); }
+function triggerGallery(rowIndex){ document.getElementById(`galleryInput_${rowIndex}`).click(); }
+function attachFilesToRow(event, rowIndex, isCamera){
+  const files=[...event.target.files];
+  if(!files.length) return;
+  files.forEach((file, idx)=>{
+    const url=URL.createObjectURL(file);
+    photos.push({
+      id:`ROW${rowIndex}_${Date.now()}_${idx}`,
+      file, blob:file,
+      name:file.name || `capture_${Date.now()}_${idx}.jpg`,
+      url, rowIndex:String(rowIndex)
+    });
+  });
+  renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+  log(`${rowIndex+1}행에 ${files.length}장 ${isCamera?'촬영':'선택'} 연결 완료`);
+  event.target.value='';
+}
+
+function linkedPhotosForRow(rowIndex){ return photos.filter(p=>String(p.rowIndex)===String(rowIndex)); }
+function unlinkPhoto(photoId){ const p=photos.find(x=>x.id===photoId); if(p){ p.rowIndex=''; renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log('사진 연결 해제 완료'); } }
+
+// unlinked import + dnd + direct connect
+function importPhotosAsUnlinked(event){
+  const files=[...event.target.files];
+  if(!files.length) return;
+  files.forEach((file,idx)=>{
+    const url=URL.createObjectURL(file);
+    photos.push({id:`UP${Date.now()}_${idx}`,file,blob:file,name:file.name,url,rowIndex:''});
+  });
+  renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+  log(`미연결 사진 ${files.length}장 불러오기 완료`);
+  event.target.value='';
+}
+function unlinkedPhotos(){ return photos.filter(p=>p.rowIndex===''||p.rowIndex===null||p.rowIndex===undefined); }
+function renderPhotosHub(){
+  const strip=document.getElementById('unlinkedPhotos');
+  const unlinked=unlinkedPhotos();
+  strip.innerHTML=unlinked.length?unlinked.map(p=>`
+    <div class="photoTile" draggable="true" ondragstart="onDragPhoto(event,'${p.id}')" onmouseenter="showHoverPreview(event,'${p.url}')" onmousemove="moveHoverPreview(event)" onmouseleave="hideHoverPreview()">
+      <button class="tileDeleteBtn" onclick="deletePhoto('${p.id}')">×</button>
+      <img class="thumb" src="${p.url}">
+      <div class="tileName">${p.name}</div>
+      <div class="tileActions">
+        <select onchange="directConnectPhoto('${p.id}', this.value)">
+          <option value="">직접연결 선택</option>
+          ${rows.map((r,idx)=>`<option value="${idx}">${idx+1}행 / ${r.title||'(제목없음)'}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  `).join('') : '<div class="small">미연결 사진이 없습니다.</div>';
+
+  const cards=document.getElementById('dropCards');
+  cards.innerHTML=rows.map((r,idx)=>`
+    <div class="dropCard" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${idx})">
+      <div><span class="badge">${r.result}</span><span class="badge">${r.category6}</span><b>${idx+1}행 / ${r.title||'(제목없음)'}</b></div>
+      <div class="small" style="margin-top:6px">${r.mainText||'주요내용 없음'}</div>
+      <div class="linkedThumbs">
+        ${linkedPhotosForRow(idx).map(p=>`<div class="linkedThumb"><img src="${p.url}" title="${p.name}"><button class="unlinkBtn" onclick="unlinkPhoto('${p.id}')">×</button></div>`).join('')||'<div class="small">여기로 미연결 사진을 드래그해서 연결</div>'}
+      </div>
+    </div>
+  `).join('');
+}
+function onDragPhoto(ev, photoId){ ev.dataTransfer.setData('text/plain', photoId); }
+function allowDrop(ev){ ev.preventDefault(); }
+function dropOnRow(ev,rowIndex){ ev.preventDefault(); const photoId=ev.dataTransfer.getData('text/plain'); directConnectPhoto(photoId, rowIndex); }
+function directConnectPhoto(photoId, rowIndex){
+  if(rowIndex==='' || rowIndex===null || rowIndex===undefined) return;
+  const p=photos.find(x=>x.id===photoId);
+  if(p){ p.rowIndex=String(rowIndex); renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log(`${Number(rowIndex)+1}행에 직접연결 완료`); }
+}
+function deletePhoto(photoId){ const idx=photos.findIndex(x=>x.id===photoId); if(idx>-1){ try{URL.revokeObjectURL(photos[idx].url);}catch(e){} photos.splice(idx,1); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log('미연결 사진 1장 삭제'); } }
+function deleteAllUnlinkedPhotos(){
+  const remain=[]; let del=0;
+  photos.forEach(p=>{ if(p.rowIndex===''||p.rowIndex===null||p.rowIndex===undefined){ try{URL.revokeObjectURL(p.url);}catch(e){} del++; } else remain.push(p); });
+  photos=remain; renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log(`미연결 사진 ${del}장 전체 삭제`);
+}
+
+// floating tooltip preview
+function showHoverPreview(ev, src){
+  hoverPreviewImg.src = src;
+  hoverPreview.style.display = 'block';
+  moveHoverPreview(ev);
+}
+function moveHoverPreview(ev){
+  if(hoverPreview.style.display !== 'block') return;
+  const pad = 16;
+  const previewW = 240;
+  const previewH = 170;
+  let x = ev.clientX + 24;
+  let y = ev.clientY - previewH/2;
+  if(x + previewW > window.innerWidth - pad){ x = ev.clientX - previewW - 24; }
+  if(y < pad){ y = pad; }
+  if(y + previewH > window.innerHeight - pad){ y = window.innerHeight - previewH - pad; }
+  hoverPreview.style.left = x + 'px';
+  hoverPreview.style.top = y + 'px';
+}
+function hideHoverPreview(){ hoverPreview.style.display = 'none'; }
+
+// middle save zip + mail
+function buildSessionObject(){
+  syncRowsFromTable();
+  return {
+    version:'mobile-save-mail-demo-1',
+    audit:{year:evalYear.value,half:evalHalf.value,division:division.value,bu:bu.value,site:site.value},
+    rows:rows,
+    photos:photos.map(p=>({id:p.id,name:p.name,rowIndex:p.rowIndex}))
+  };
+}
+async function createSessionZipBlobAndName(){
+  const zip = new JSZip();
+  const session = buildSessionObject();
+  zip.file('session.json', JSON.stringify(session, null, 2));
+  const linked = photos.filter(p=>p.rowIndex!=='' && p.rowIndex!==null && p.rowIndex!==undefined);
+  for(const p of linked){
+    let blob = p.blob;
+    if(!blob && p.file) blob = p.file;
+    if(!blob){
+      const res = await fetch(p.url);
+      blob = await res.blob();
+    }
+    const safeName = String(p.name || p.id).replace(/[\\/:*?"<>|]+/g,'_');
+    zip.file(`linked_photos/${safeName}`, blob);
+  }
+  const blob = await zip.generateAsync({type:'blob'});
+  const name = `audit_middle_save_${Date.now()}.zip`;
+  return {blob, name, linkedCount: linked.length};
+}
+async function exportSessionZip(){
+  const {blob, name, linkedCount} = await createSessionZipBlobAndName();
+  lastExportedZipName = name;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 300);
+  log(`중간저장 ZIP 생성 완료: ${name} / 연결사진 ${linkedCount}장`);
+}
+async function sendSessionZipByEmail(){
+  const recipient = (recipientEmail.value || '').trim();
+  if(!recipient){
+    log('메일 보내기 실패: 점검자 이메일을 입력해 주세요.');
+    recipientEmail.focus();
+    return;
+  }
+  const {blob, name, linkedCount} = await createSessionZipBlobAndName();
+  lastExportedZipName = name;
+
+  // Save zip first
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 300);
+
+  const subject = '현장 점검 모바일 중간 저장본';
+  const body = `현장 점검 모바일 중간 저장본 입니다.\n반드시 "${name}"을 첨부해 주세요.`;
+  const mailto = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+
+  log(`메일 작성창 열기 완료: ${name} 저장 후 ${recipient} 수신자로 메일 앱을 열었습니다. 첨부는 직접 추가해 주세요. (연결사진 ${linkedCount}장 포함 ZIP)`);
+}
+async function importSessionZip(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const zip = await JSZip.loadAsync(file);
+  const sessionEntry = zip.file('session.json');
+  if(!sessionEntry){
+    log('불러오기 실패: session.json 이 없습니다.');
+    event.target.value='';
+    return;
+  }
+  const session = JSON.parse(await sessionEntry.async('string'));
+
+  evalYear.value=session.audit?.year||'';
+  evalHalf.value=session.audit?.half||'';
+  division.value=session.audit?.division||'';
+  updateBu();
+  setSelectValue(bu,session.audit?.bu||'');
+  updateSite();
+  setSelectValue(site,session.audit?.site||'');
+
+  rows = (session.rows||[]).map(r=>({
+    category6:r.category6||'안전보건교육',
+    title:r.title||'',
+    mainText:r.mainText||'',
+    score:Number(r.score||0),
+    result:r.result||'보완',
+    riskType:r.riskType||'관리적요인',
+    photoTag:r.photoTag||''
+  }));
+
+  photos.forEach(p=>{ try{URL.revokeObjectURL(p.url);}catch(e){} });
+  photos = [];
+
+  const photoMap = new Map();
+  Object.values(zip.files).forEach(entry=>{
+    if(!entry.dir && entry.name.startsWith('linked_photos/')){
+      const fileName = entry.name.split('/').pop();
+      photoMap.set(fileName, entry);
+    }
+  });
+
+  for(const p of (session.photos||[])){
+    const fileName = String(p.name || '').replace(/[\\/:*?"<>|]+/g,'_');
+    const entry = photoMap.get(fileName);
+    if(entry){
+      const blob = await entry.async('blob');
+      const url = URL.createObjectURL(blob);
+      photos.push({id:p.id||`IMP_${Date.now()}`, name:p.name||fileName, rowIndex:p.rowIndex||'', blob, file:null, url});
+    }
+  }
+
+  renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); validateHeader();
+  log(`중간저장 ZIP 불러오기 완료: 행 ${rows.length}개 / 연결사진 ${photos.length}장 복원`);
+  event.target.value='';
+}
+
+// RAW DB XLSX with photo names
+function buildRawdbRowsWithPhotoNames(){
+  syncRowsFromTable();
+  const result = [];
+  rows.forEach((r, idx)=>{
+    const linked = linkedPhotosForRow(idx);
+    const photoNames = linked.map(p=>p.name).join(' | ');
+    result.push({
+      '평가년도': evalYear.value,
+      '평가반기': evalHalf.value,
+      '카테고리': r.category6,
+      '코드': 'V',
+      '대분류': '기타',
+      '코드2': (r.result==='적정' ? 'M' : r.result==='보완' ? 'N' : 'N/A'),
+      '중분류': (r.result==='적정' ? '위탁관리' : '기타'),
+      'No': idx + 1,
+      '소분류': r.title,
+      '주요내용': r.mainText,
+      '생산/기타': division.value,
+      'BU': bu.value,
+      '사업장명': site.value,
+      '배점': r.score,
+      '적용배점': (r.result==='적정' ? r.score : r.result==='보완' ? -r.score : 'N/A'),
+      '점수': (r.result==='적정' ? r.score : r.result==='보완' ? -r.score : 'N/A'),
+      '위험분류': r.riskType,
+      '사진명': photoNames || ''
+    });
+  });
+  return result;
+}
+function downloadRawdbXlsx(){
+  const rows = buildRawdbRowsWithPhotoNames();
+  if(!rows.length){
+    log('RAW DB XLSX 다운로드 실패: 데이터가 없습니다.');
+    return;
+  }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'RAW_DB');
+  XLSX.writeFile(wb, 'audit_rawdb_with_photo_names.xlsx');
+  log(`RAW DB XLSX 다운로드 완료: ${rows.length}행 / 연결 사진명 포함`);
+}
+
+// briefing
+function rebuildBriefingItems(){
+  briefingItems=rows.map((r,idx)=>({rowIndex:idx,row:r,linkedPhotos:linkedPhotosForRow(idx)})).filter(x=>x.linkedPhotos.length>0);
+  if(currentItemIndex>=briefingItems.length) currentItemIndex=Math.max(0,briefingItems.length-1);
+  const item=briefingItems[currentItemIndex];
+  if(item && currentPhotoIndex>=item.linkedPhotos.length) currentPhotoIndex=0;
+}
+function renderBriefingList(){
+  const el=document.getElementById('briefingList');
+  if(!briefingItems.length){ el.innerHTML='연결된 항목 없음'; return; }
+  el.innerHTML=briefingItems.map((item,idx)=>`<div style="padding:8px;border:1px solid #374151;border-radius:10px;margin-bottom:8px;cursor:pointer;${idx===currentItemIndex?'outline:2px solid #60a5fa;':''}" onclick="selectBriefingItem(${idx})">${idx===currentItemIndex?'▶ ':''}${item.rowIndex+1}행 / ${item.row.title||'(제목없음)'} (${item.linkedPhotos.length}장)</div>`).join('');
+}
+function selectBriefingItem(idx){ currentItemIndex=idx; currentPhotoIndex=0; renderBriefingList(); loadCurrentBriefingPhoto(); }
+function prevItem(){ if(!briefingItems.length) return; currentItemIndex=(currentItemIndex-1+briefingItems.length)%briefingItems.length; currentPhotoIndex=0; renderBriefingList(); loadCurrentBriefingPhoto(); }
+function nextItem(){ if(!briefingItems.length) return; currentItemIndex=(currentItemIndex+1)%briefingItems.length; currentPhotoIndex=0; renderBriefingList(); loadCurrentBriefingPhoto(); }
+function prevPhotoInItem(){ const item=briefingItems[currentItemIndex]; if(!item) return; currentPhotoIndex=(currentPhotoIndex-1+item.linkedPhotos.length)%item.linkedPhotos.length; loadCurrentBriefingPhoto(); }
+function nextPhotoInItem(){ const item=briefingItems[currentItemIndex]; if(!item) return; currentPhotoIndex=(currentPhotoIndex+1)%item.linkedPhotos.length; loadCurrentBriefingPhoto(); }
+async function loadCurrentBriefingPhoto(){
+  rebuildBriefingItems();
+  if(!briefingItems.length){
+    clearViewerCanvas();
+    metaTitle.textContent='-'; metaResult.textContent='-'; metaCategory.textContent='-'; metaRowNo.textContent='-'; metaRisk.textContent='-'; metaText.textContent='-'; metaTag.textContent='-'; metaPhotoIndex.textContent='-'; viewerThumbBar.innerHTML='';
+    return;
+  }
+  const item=briefingItems[currentItemIndex];
+  const photo=item.linkedPhotos[currentPhotoIndex];
+  const res=await fetch(photo.url);
+  const blob=await res.blob();
+  imageBitmap=await createImageBitmap(blob);
+  imageNaturalWidth=imageBitmap.width; imageNaturalHeight=imageBitmap.height;
+  resizeViewerCanvas(); resetView(true); renderMeta(); renderViewerThumbBar();
+}
+function renderMeta(){
+  const item=briefingItems[currentItemIndex];
+  const photo=item.linkedPhotos[currentPhotoIndex];
+  metaTitle.textContent=item.row.title||'(제목없음)';
+  metaResult.textContent=item.row.result||'-';
+  metaCategory.textContent=item.row.category6||'-';
+  metaRowNo.textContent=`${item.rowIndex+1}행`;
+  metaRisk.textContent=item.row.riskType||'-';
+  metaText.textContent=item.row.mainText||'-';
+  metaTag.textContent=item.row.photoTag||'-';
+  metaPhotoIndex.textContent=`${currentPhotoIndex+1} / ${item.linkedPhotos.length} (${photo.name})`;
+}
+function renderViewerThumbBar(){
+  const item=briefingItems[currentItemIndex];
+  viewerThumbBar.innerHTML=item.linkedPhotos.map((p,idx)=>`<img src="${p.url}" class="${idx===currentPhotoIndex?'active':''}" onclick="jumpPhoto(${idx})">`).join('');
+}
+function jumpPhoto(idx){ currentPhotoIndex=idx; loadCurrentBriefingPhoto(); }
+
+// viewer canvas
+function clearViewerCanvas(){ const ctx=drawCanvas.getContext('2d'); ctx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
+function setTool(tool){ currentTool=tool; viewerStatus.textContent='도구: '+(tool==='move'?'이동':tool==='laser'?'레이저':'펜'); if(tool==='move') drawCanvas.style.cursor='grab'; else if(tool==='laser') drawCanvas.style.cursor='none'; else drawCanvas.style.cursor='crosshair'; if(tool!=='laser') laserDot.style.display='none'; }
+function setPenColor(v){ penColor=v; }
+function setPenWidth(v){ penWidth=Number(v||4); }
+function clearDrawing(){ strokes=[]; redrawViewer(); }
+function resizeViewerCanvas(){ const wrap=document.getElementById('viewerStage').getBoundingClientRect(); drawCanvas.width=wrap.width; drawCanvas.height=wrap.height; redrawViewer(); }
+function computeContainTransform(){ const cw=drawCanvas.width,ch=drawCanvas.height; const scaleX=cw/imageNaturalWidth, scaleY=ch/imageNaturalHeight; currentScale=Math.min(scaleX,scaleY); translateX=(cw-imageNaturalWidth*currentScale)/2; translateY=(ch-imageNaturalHeight*currentScale)/2; }
+function redrawViewer(){
+  const ctx=drawCanvas.getContext('2d');
+  ctx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  if(!imageBitmap) return;
+  ctx.save();
+  ctx.translate(translateX,translateY); ctx.scale(currentScale,currentScale);
+  ctx.drawImage(imageBitmap,0,0);
+  strokes.forEach(s=>{ if(!s.points.length) return; ctx.strokeStyle=s.color; ctx.lineWidth=s.width/currentScale; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(s.points[0].x,s.points[0].y); for(let i=1;i<s.points.length;i++) ctx.lineTo(s.points[i].x,s.points[i].y); ctx.stroke(); });
+  ctx.restore();
+}
+function resetView(keepOpen){ if(!imageBitmap) return; computeContainTransform(); strokes=[]; redrawViewer(); if(!keepOpen) setTool('move'); }
+function zoomIn(){ currentScale*=1.15; redrawViewer(); }
+function zoomOut(){ currentScale/=1.15; redrawViewer(); }
+window.addEventListener('resize', ()=>{ resizeViewerCanvas(); });
+function screenToImage(x,y){ return {x:(x-translateX)/currentScale, y:(y-translateY)/currentScale}; }
+drawCanvas.addEventListener('pointerdown', e=>{ const rect=drawCanvas.getBoundingClientRect(); const x=e.clientX-rect.left,y=e.clientY-rect.top; if(currentTool==='move'){ dragging=true; dragStartX=x; dragStartY=y; drawCanvas.setPointerCapture(e.pointerId);} else if(currentTool==='pen'){ drawing=true; const p=screenToImage(x,y); currentStroke={color:penColor,width:penWidth,points:[p]}; strokes.push(currentStroke); redrawViewer(); } });
+drawCanvas.addEventListener('pointermove', e=>{ const rect=drawCanvas.getBoundingClientRect(); const x=e.clientX-rect.left,y=e.clientY-rect.top; if(currentTool==='laser'){ laserDot.style.display='block'; laserDot.style.left=x+'px'; laserDot.style.top=y+'px'; } else { laserDot.style.display='none'; } if(currentTool==='move'&&dragging){ translateX+=(x-dragStartX); translateY+=(y-dragStartY); dragStartX=x; dragStartY=y; redrawViewer(); } else if(currentTool==='pen'&&drawing){ const p=screenToImage(x,y); currentStroke.points.push(p); redrawViewer(); } });
+drawCanvas.addEventListener('pointerup', e=>{ dragging=false; drawing=false; currentStroke=null; try{ drawCanvas.releasePointerCapture(e.pointerId);}catch(err){} });
+drawCanvas.addEventListener('pointerleave', ()=>{ if(currentTool!=='laser') laserDot.style.display='none'; });
+drawCanvas.addEventListener('wheel', e=>{ e.preventDefault(); const rect=drawCanvas.getBoundingClientRect(); const sx=e.clientX-rect.left, sy=e.clientY-rect.top; const before=screenToImage(sx,sy); currentScale*=e.deltaY<0?1.08:0.92; translateX=sx-before.x*currentScale; translateY=sy-before.y*currentScale; redrawViewer(); }, {passive:false});
+document.addEventListener('keydown', e=>{ if(document.getElementById('tab-briefing').classList.contains('active')){ if(e.key==='Escape'){ currentTool='move'; laserDot.style.display='none'; strokes=[]; if(imageBitmap){ computeContainTransform(); redrawViewer(); } viewerStatus.textContent='도구: 이동'; drawCanvas.style.cursor='grab'; } else if(e.key==='ArrowLeft'){ prevPhotoInItem(); } else if(e.key==='ArrowRight'){ nextPhotoInItem(); } else if(e.key==='PageUp'){ prevItem(); } else if(e.key==='PageDown'){ nextItem(); } } });
+
+clearAll();
+</script>
+</body>
+</html>
