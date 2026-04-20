@@ -130,8 +130,31 @@
         <input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)">
       </label>
       <button onclick="deleteAllUnlinkedPhotos()">미연결 전체 삭제</button>
+      <button onclick="saveLinkedPhotosOriginalAndCompressed()">원본+압축본 저장하기</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div>파일명 Prefix <input id="photoPrefix" value="AUDIT"></div>
+      <div>긴변(px)
+        <select id="maxSize">
+          <option value="0">원본 유지</option>
+          <option value="2000">2000</option>
+          <option value="1600" selected>1600</option>
+          <option value="1280">1280</option>
+          <option value="1024">1024</option>
+        </select>
+      </div>
+      <div>품질
+        <select id="quality">
+          <option value="0.9">0.9</option>
+          <option value="0.8">0.8</option>
+          <option value="0.75" selected>0.75</option>
+          <option value="0.7">0.7</option>
+          <option value="0.6">0.6</option>
+        </select>
+      </div>
     </div>
     <div class="small" id="photoWarn" style="margin-top:8px"></div>
+    <div class="small" style="margin-top:4px">연결 완료된 사진만 저장됩니다. 저장 결과는 선택 폴더 하위 <b>originals</b> / <b>compressed</b> 폴더로 생성됩니다.</div>
   </div>
 
   <div class="card">
@@ -566,6 +589,110 @@ function downloadRawdbXlsx(){
   XLSX.utils.book_append_sheet(wb, ws, 'RAW_DB');
   XLSX.writeFile(wb, 'audit_rawdb_with_photo_names.xlsx');
   log(`RAW DB XLSX 다운로드 완료: ${rows.length}행 / 연결 사진명 포함`);
+}
+
+
+function sanitizeFilePart(s){ return String(s||'').replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,'_').trim(); }
+function buildPhotoFilename(photo, photoIndexWithinRow){
+  syncRowsFromTable();
+  const rowIdx = photo.rowIndex;
+  if(rowIdx===''||rowIdx===null||rowIdx===undefined) return '';
+  const r = rows[Number(rowIdx)];
+  if(!r) return '';
+  const prefix = sanitizeFilePart(photoPrefix.value||'AUDIT');
+  const year = sanitizeFilePart(evalYear.value||'YEAR');
+  const half = sanitizeFilePart(evalHalf.value||'HALF');
+  const siteName = sanitizeFilePart(site.value||'SITE');
+  const rowNo = String(Number(rowIdx)+1).padStart(3,'0');
+  const photoNo = String(photoIndexWithinRow+1).padStart(3,'0');
+  const tag = sanitizeFilePart(r.photoTag || r.title || 'PHOTO');
+  return `${prefix}_${year}_${half}_${siteName}_${rowNo}_${photoNo}_${tag}.jpg`;
+}
+function compressImage(fileOrBlob,maxSize,quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(fileOrBlob);
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(maxSize>0){
+        if(w>=h&&w>maxSize){ h=Math.round(h*(maxSize/w)); w=maxSize; }
+        else if(h>w&&h>maxSize){ w=Math.round(w*(maxSize/h)); h=maxSize; }
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>{
+        URL.revokeObjectURL(url);
+        if(blob) resolve(blob);
+        else reject(new Error('이미지 변환 실패'));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('이미지 로드 실패')); };
+    img.src=url;
+  });
+}
+async function getPhotoSourceBlob(p){
+  if(p.blob) return p.blob;
+  if(p.file) return p.file;
+  const res = await fetch(p.url);
+  return await res.blob();
+}
+async function saveLinkedPhotosOriginalAndCompressed(){
+  if(!('showDirectoryPicker' in window)){
+    photoWarn.innerHTML = '<span class="warn">이 기능은 Chrome/Edge 계열 브라우저에서 지원됩니다.</span>';
+    log('원본/압축본 저장 실패: 브라우저 미지원');
+    return;
+  }
+  syncRowsFromTable();
+  const linked = photos.filter(p=>p.rowIndex!=='' && p.rowIndex!==null && p.rowIndex!==undefined);
+  if(!linked.length){
+    photoWarn.innerHTML = '<span class="warn">연결 완료된 사진이 없습니다.</span>';
+    log('원본/압축본 저장 실패: 연결 사진 없음');
+    return;
+  }
+  const maxSize = Number(document.getElementById('maxSize').value || 0);
+  const quality = Number(document.getElementById('quality').value || 0.75);
+  try{
+    const dir = await window.showDirectoryPicker();
+    const originalsDir = await dir.getDirectoryHandle('originals',{create:true});
+    const compressedDir = await dir.getDirectoryHandle('compressed',{create:true});
+
+    const byRow = {};
+    linked.forEach(p=>{
+      byRow[p.rowIndex] = byRow[p.rowIndex] || [];
+      byRow[p.rowIndex].push(p);
+    });
+
+    let savedCount = 0;
+    for(const rowIdx of Object.keys(byRow)){
+      const arr = byRow[rowIdx];
+      for(let i=0;i<arr.length;i++){
+        const p = arr[i];
+        const sourceBlob = await getPhotoSourceBlob(p);
+        const fileName = buildPhotoFilename(p, i);
+
+        const oh = await originalsDir.getFileHandle(fileName,{create:true});
+        const ow = await oh.createWritable();
+        await ow.write(sourceBlob);
+        await ow.close();
+
+        const compressedBlob = await compressImage(sourceBlob, maxSize, quality);
+        const ch = await compressedDir.getFileHandle(fileName,{create:true});
+        const cw = await ch.createWritable();
+        await cw.write(compressedBlob);
+        await cw.close();
+
+        savedCount++;
+      }
+    }
+
+    photoWarn.innerHTML = `<span class="ok">연결 완료된 사진 ${savedCount}장을 originals / compressed 폴더로 저장했습니다.</span>`;
+    log(`원본+압축본 저장 완료: ${savedCount}장 / 긴변 ${maxSize===0?'원본유지':maxSize}px / 품질 ${quality}`);
+  }catch(e){
+    photoWarn.innerHTML = `<span class="warn">사진 저장 중 오류: ${e.message}</span>`;
+    log(`원본+압축본 저장 오류: ${e.message}`);
+  }
 }
 
 // briefing
