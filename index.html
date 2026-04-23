@@ -76,7 +76,7 @@
   button:hover{border-color:var(--primary-2); background:#f7fbff}
   button:active{transform:translateY(1px)}
 
-  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:0}
   th,td{
     border-bottom:1px solid var(--border);
     padding:9px 8px;
@@ -95,7 +95,7 @@
   .ok{color:var(--success)}
   .warn{color:var(--danger)}
 
-  .topbar-shell{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;padding:8px 10px;background:rgba(255,255,255,.72);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:20;backdrop-filter:blur(10px)}
+  .topbar-shell{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;padding:8px 10px;background:rgba(255,255,255,.72);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)}
   .bi-slot{
     min-width:160px;
     max-width:320px;
@@ -296,7 +296,7 @@
 
   .topbar-shell{display:flex;align-items:center;justify-content:space-between;gap:14px}
   .tabbar{margin-left:auto;justify-content:flex-end}
-  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;width:100%}
+  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0;width:100%}
   @media (max-width:900px){.ci-dual-row{grid-template-columns:1fr}}
   .ci-box{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface-2)}
   .ci-box textarea{width:100%;min-height:110px}
@@ -317,35 +317,240 @@
   }
 
 
-  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;width:100%}
-  @media (max-width:900px){.ci-dual-row{grid-template-columns:1fr}}
-  .ci-box{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface-2)}
-  .ci-box textarea{width:100%;min-height:110px}
-  .ci-preview{margin-top:8px;min-height:46px;border:1px dashed var(--border-strong);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
-  .ci-preview img{max-height:40px;max-width:100%;object-fit:contain;display:block}
+  .data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .data-card{border:1px solid var(--border);border-radius:16px;padding:16px;background:linear-gradient(180deg,#ffffff 0%, #f9fbfe 100%);box-shadow:0 8px 20px rgba(15,23,42,.05)}
+  .data-card h3{margin:0 0 8px 0}
+  .data-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:0}
 
-  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;width:100%}
-  @media (max-width:900px){.ci-dual-row{grid-template-columns:1fr}}
-  .ci-box{border:1px solid #d8e1ec;border-radius:14px;padding:12px;background:#f8fafc}
-  .ci-box textarea{width:100%;min-height:110px}
-  .ci-preview{margin-top:8px;min-height:46px;border:1px dashed #c4d0df;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
-  .ci-preview img{max-height:40px;max-width:100%;object-fit:contain;display:block}
+  @media (max-width:700px){
+    .data-actions button,
+    .data-actions label{
+      width:100%;
+      justify-content:center;
+    }
+    .data-card{padding:14px}
+  }
 
-  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;width:100%}
-  @media (max-width:900px){.ci-dual-row{grid-template-columns:1fr}}
-  .ci-box{border:1px solid #d8e1ec;border-radius:14px;padding:12px;background:#f8fafc}
-  .ci-box textarea{width:100%;min-height:110px}
-  .ci-preview{margin-top:8px;min-height:46px;border:1px dashed #c4d0df;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
-  .ci-preview img{max-height:40px;max-width:100%;object-fit:contain;display:block}
+  .pdf-render-page{
+    width:794px;
+    min-height:1123px;
+    background:#fff;
+    color:#111827;
+    position:relative;
+    padding:56px 42px 42px 42px;
+    font-family:"Noto Sans KR", Arial, sans-serif;
+    box-sizing:border-box;
+  }
+  .pdf-render-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid #cfd8e3;
+    padding-bottom:10px;
+    margin-bottom:16px;
+  }
+  .pdf-render-title{
+    font-size:24px;
+    font-weight:800;
+    color:#111827;
+  }
+  .pdf-render-logo{
+    width:110px;
+    height:42px;
+    object-fit:contain;
+  }
+  .pdf-render-item-title{
+    font-size:18px;
+    font-weight:800;
+    margin-bottom:10px;
+    color:#111827;
+  }
+  .pdf-render-meta{
+    font-size:13px;
+    line-height:1.6;
+    color:#374151;
+    white-space:pre-wrap;
+    margin-bottom:12px;
+  }
+  .pdf-render-main{
+    font-size:14px;
+    line-height:1.7;
+    color:#111827;
+    margin-bottom:14px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .pdf-render-photo-wrap{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid #d7deea;
+    border-radius:10px;
+    overflow:hidden;
+    background:#fff;
+    min-height:520px;
+  }
+  .pdf-render-photo{
+    max-width:100%;
+    max-height:760px;
+    object-fit:contain;
+    display:block;
+  }
+  .pdf-render-footer{
+    position:absolute;
+    right:42px;
+    bottom:24px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+
+  .topbar-shell{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:16px;
+    padding:8px 10px;
+    background:rgba(255,255,255,.72);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    position:sticky;
+    top:0;
+    z-index:20;
+    backdrop-filter:blur(10px);
+  }
+  .tabbar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:0;
+    margin-left:auto;
+    justify-content:flex-end;
+    padding:0;
+    background:transparent;
+    border:none;
+    border-radius:0;
+    box-shadow:none;
+    position:static;
+    top:auto;
+    z-index:auto;
+    backdrop-filter:none;
+  }
+  @media (max-width: 900px){
+    .topbar-shell{
+      display:block;
+      padding:10px;
+    }
+    .bi-slot{
+      margin-bottom:10px;
+      min-width:unset;
+      max-width:none;
+      width:100%;
+      justify-content:flex-start;
+    }
+    .tabbar{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -ms-overflow-style:none;
+      scrollbar-width:none;
+      margin-left:0;
+      justify-content:flex-start;
+      width:100%;
+      padding-bottom:2px;
+    }
+    .tabbar::-webkit-scrollbar{display:none}
+    .tabbar .tabbtn{
+      flex:0 0 auto;
+      white-space:nowrap;
+    }
+  }
+
+  /* Slightly reduce overall typography */
+  body{font-size:15px}
+  input, select, textarea, button{font-size:14px}
+  .small{font-size:12px}
+  h2{font-size:22px}
+  h3{font-size:17px}
+  .tabbtn{font-size:13px}
+
+  /* File input UI cleanup */
+  input[type="file"]{
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+  }
+  .file-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+  }
+
+  /* Checklist editor rows horizontal scroll */
+  .editor-table-wrap{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .editor-table-wrap::-webkit-scrollbar{display:none}
+
+  .file-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:9px 11px;
+    background:linear-gradient(180deg,#ffffff 0%, #f4f8fd 100%);
+    font-weight:600;
+    color:var(--text);
+    min-height:42px;
+  }
+  .file-btn:hover{border-color:var(--primary-2); background:#f7fbff}
+  .file-btn span{pointer-events:none}
+  .editor-table-card{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .editor-table-card::-webkit-scrollbar{display:none}
+  #editorTbl{min-width:1180px}
+
+
+
+.audit-table-card{
+  overflow-x:auto;
+  overflow-y:hidden;
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+}
+.audit-table-card::-webkit-scrollbar{display:none}
+#auditTbl{min-width:1180px}
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-<div class="card">
-  <h2 style="margin-top:0">Audit Tool + Checklist Editor v2</h2>
-  <div class="small">열 추가형 에디터 + 입력폼 템플릿(텍스트/숫자/드롭다운/체크박스/메모) 지원</div>
+
 </div>
 
 <div class="topbar-shell"><div class="bi-slot" id="biLogoSlot">CI LOGO</div><div class="tabbar">
@@ -353,6 +558,7 @@
   <button class="tabbtn" onclick="showTab('audit', this)">점검 입력</button>
   <button class="tabbtn" onclick="showTab('photos', this); renderPhotosHub()">사진 연결</button>
   <button class="tabbtn" onclick="showTab('briefing', this); rebuildBriefingItems(); renderBriefingList(); loadCurrentBriefingPhoto()">강평 브리핑</button>
+  <button class="tabbtn" onclick="showTab('data', this); renderDataTab()">데이터</button>
 </div></div>
 
 <div id="tab-editor" class="tabpage active">
@@ -362,12 +568,9 @@
       <button onclick="addPresetRows()">자주 쓰는 예시 3행 추가</button>
       <button onclick="sortRowsByPart()">PART별 정렬</button>
       <button onclick="downloadChecklistJSON()">체크리스트 저장(JSON)</button>
-      <label style="display:inline-flex;align-items:center;gap:8px">
-        <span>체크리스트 불러오기</span>
-        <input id="jsonFile" type="file" accept=".json" onchange="importChecklistJSON(event)">
-      </label>
+      <label class="file-btn"><span>체크리스트 불러오기</span><input id="jsonFile" type="file" accept=".json" onchange="importChecklistJSON(event)"></label>
     </div>
-    <div class="row" style="margin-top:10px">
+    <div class="row" style="margin-top:0">
       <div>빠른 입력도구:</div>
       <button class="pillbtn" onclick="addRow({part:'안전',category6:'유해위험방지 조치',title:'',mainText:'',score:2,result:'보완',riskType:'기계설비적요인',photoTag:'',extras:{}})">안전 항목</button>
       <button class="pillbtn" onclick="addRow({part:'보건',category6:'근로자 보건관리',title:'',mainText:'',score:2,result:'보완',riskType:'작업환경요인',photoTag:'',extras:{}})">보건 항목</button>
@@ -401,11 +604,11 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="card editor-table-card">
     <table id="editorTbl">
       <thead></thead>
       <tbody></tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 
@@ -416,16 +619,10 @@
       <button onclick="downloadRawdbXlsx()">RAW DB XLSX 다운로드</button>
       <button onclick="exportSessionZip()">중간저장 ZIP</button>
       <button onclick="sendSessionZipByEmail()">중간저장 ZIP 보내기</button>
-      <label style="display:inline-flex;align-items:center;gap:8px">
-        <span>중간저장 ZIP 불러오기</span>
-        <input id="sessionZipFile" type="file" accept=".zip" onchange="importSessionZip(event)">
-      </label>
-      <label style="display:inline-flex;align-items:center;gap:8px">
-        <span>취합 ZIP 불러오기(복수)</span>
-        <input id="sessionZipMultiFile" type="file" accept=".zip" multiple onchange="importMultipleSessionZips(event)">
-      </label>
+      <label class="file-btn"><span>중간저장 ZIP 불러오기</span><input id="sessionZipFile" type="file" accept=".zip" onchange="importSessionZip(event)"></label>
+      <label class="file-btn"><span>취합 ZIP 불러오기(복수)</span><input id="sessionZipMultiFile" type="file" accept=".zip" multiple onchange="importMultipleSessionZips(event)"></label>
     </div>
-    <div class="row" style="margin-top:10px">
+    <div class="row" style="margin-top:0">
       <div>점검자 이메일 <input id="recipientEmail" type="email" placeholder="example@company.com"></div>
     </div>
     <div class="small" style="margin-top:8px">메일 앱에서 ZIP 첨부는 직접 추가해야 합니다.</div>
@@ -453,10 +650,7 @@
 <div id="tab-photos" class="tabpage">
   <div class="card">
     <div class="row">
-      <label style="display:inline-flex;align-items:center;gap:8px">
-        <span>미연결 사진 불러오기</span>
-        <input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)">
-      </label>
+      <label class="file-btn"><span>미연결 사진 불러오기</span><input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)"></label>
       <button onclick="deleteAllUnlinkedPhotos()">미연결 전체 삭제</button>
       <button onclick="saveLinkedPhotosOnly()">원본+압축본 저장하기</button>
     </div>
@@ -536,11 +730,11 @@
       <div class="metaTitle" id="metaTitle">-</div>
       <div style="margin-bottom:10px"><span class="badge" id="metaPart">-</span><span class="badge" id="metaResult">-</span><span class="badge" id="metaCategory">-</span></div>
       <div class="small">항목</div><div id="metaRowNo" class="metaText">-</div>
-      <div class="small" style="margin-top:10px">위험분류</div><div id="metaRisk" class="metaText">-</div>
-      <div class="small" style="margin-top:10px">주요내용</div><div id="metaText" class="metaText">-</div>
-      <div class="small" style="margin-top:10px">사진태그</div><div id="metaTag" class="metaText">-</div>
-      <div class="small" style="margin-top:10px">사진</div><div id="metaPhotoIndex" class="metaText">-</div>
-      <div class="small" style="margin-top:10px">연결 항목 목록</div><div id="briefingList" class="metaText">-</div>
+      <div class="small" style="margin-top:0">위험분류</div><div id="metaRisk" class="metaText">-</div>
+      <div class="small" style="margin-top:0">주요내용</div><div id="metaText" class="metaText">-</div>
+      <div class="small" style="margin-top:0">사진태그</div><div id="metaTag" class="metaText">-</div>
+      <div class="small" style="margin-top:0">사진</div><div id="metaPhotoIndex" class="metaText">-</div>
+      <div class="small" style="margin-top:0">연결 항목 목록</div><div id="briefingList" class="metaText">-</div>
     </div>
   </div>
 </div>
@@ -550,6 +744,105 @@
   <pre id="logBox">준비 완료</pre>
 </div>
 
+
+
+<div id="tab-data">
+
+<div class="data-card">
+  <h3>ZIP 누적 불러오기</h3>
+  <div class="data-actions">
+    <label class="file-btn">
+      <span>취합 ZIP 불러오기(복수/누적)</span>
+      <input type="file" multiple accept=".zip" onchange="importMultipleSessionZips(event)">
+    </label>
+    <button onclick="sortRowsByPart()">파트별 정렬</button>
+  </div>
+</div>
+ class="tabpage">
+  <div class="card">
+    <h2 style="margin-top:0">데이터</h2>
+    <div class="small">배포/보관/사진 저장/PDF 생성을 한 곳에서 실행합니다.</div>
+  </div>
+
+  <div class="data-grid">
+    <div class="data-card">
+      <h3>SHE-MS 업로드용</h3>
+      <div class="small">현재 점검 데이터를 업로드용 XLSX로 생성합니다.</div>
+      <div class="data-actions">
+        <button onclick="downloadShemsUploadXlsx()">XLSX 다운로드</button>
+      </div>
+    </div>
+
+    <div class="data-card">
+      <h3>RAW DB 보관용</h3>
+      <div class="small">매크로 포함 XLSM 템플릿을 불러와 현재 데이터를 주입한 뒤 XLSM으로 다시 저장합니다.</div>
+      <div class="data-actions">
+        <label class="file-btn"><span>XLSM 불러오기</span><input id="rawDbXlsmTemplate" type="file" accept=".xlsm"></label>
+        <button onclick="downloadRawDbXlsm()">값 넣기 → XLSM 다운로드</button>
+      </div>
+      <div class="small" style="margin-top:8px">기존 매크로가 들어있는 템플릿이 필요합니다.</div>
+    </div>
+
+    <div class="data-card">
+      <h3>사진 원본+압축본</h3>
+      <div class="small">현행 폴더 선택 후 originals / compressed 하위 폴더에 저장합니다.</div>
+      <div class="row" style="margin-top:0">
+        <div>파일명 Prefix <input id="dataPhotoPrefix" value="AUDIT"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div>긴변(px)
+          <select id="dataMaxSize">
+            <option value="0">원본 유지</option>
+            <option value="2000">2000</option>
+            <option value="1600" selected>1600</option>
+            <option value="1280">1280</option>
+            <option value="1024">1024</option>
+          </select>
+        </div>
+        <div>품질
+          <select id="dataQuality">
+            <option value="0.9">0.9</option>
+            <option value="0.8">0.8</option>
+            <option value="0.75" selected>0.75</option>
+            <option value="0.7">0.7</option>
+            <option value="0.6">0.6</option>
+          </select>
+        </div>
+      </div>
+      <div class="data-actions">
+        <button onclick="downloadOriginalsAndCompressedFromDataTab()">원본 + 압축본 저장</button>
+        <button onclick="downloadPhotosAsZip()">원본+압축본 ZIP 저장 (모바일 권장)</button>
+      </div>
+    </div>
+
+    <div class="data-card">
+      <h3>강평 PDF</h3>
+      <div class="small">연결된 항목과 사진을 페이지 단위 PDF로 생성합니다. 우측 상단에는 CI 로고를 반복 삽입합니다.</div>
+      <div class="row" style="margin-top:0">
+        <div>사진 긴변(px)
+          <select id="pdfMaxEdge">
+            <option value="1600">1600</option>
+            <option value="1280" selected>1280</option>
+            <option value="1024">1024</option>
+            <option value="900">900</option>
+          </select>
+        </div>
+        <div>사진 품질
+          <select id="pdfQuality">
+            <option value="0.85">0.85</option>
+            <option value="0.75" selected>0.75</option>
+            <option value="0.65">0.65</option>
+            <option value="0.55">0.55</option>
+          </select>
+        </div>
+      </div>
+      <div class="small" style="margin-top:8px">한글 깨짐 방지를 위해 페이지를 이미지 기반으로 렌더링합니다.</div>
+      <div class="data-actions">
+        <button onclick="safeDownloadPdf()">PDF 생성</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="app-footer" id="copyrightFooter">
   © DAESANG Co., Ltd. SHE Dept. BAE SEONG KYEONG
@@ -563,16 +856,16 @@
         <div class="small">숨김 패널에서 팀원 정보를 등록/수정합니다.</div>
       </div>
       <div class="row">
-        <label style="display:inline-flex;align-items:center;gap:8px"><span>CI 로고 불러오기</span><input id="biLogoInput" type="file" accept="image/*" onchange="importBiLogo(event)"></label>
+        <label class="file-btn" style="display:inline-flex;align-items:center;gap:8px"><span>CI 로고 불러오기</span><input id="biLogoInput" type="file" accept="image/*" onchange="importBiLogo(event)"></label>
         <button onclick="clearBiLogo()">CI 로고 초기화</button>
         <button onclick="downloadTeamXlsxTemplate()">팀원 XLSX 양식</button>
-        <label style="display:inline-flex;align-items:center;gap:8px"><span>팀원 XLSX 불러오기</span><input id="teamXlsxInput" type="file" accept=".xlsx,.xls" onchange="importTeamMembersXlsx(event)"></label>
+        <label class="file-btn" style="display:inline-flex;align-items:center;gap:8px"><span>팀원 XLSX 불러오기</span><input id="teamXlsxInput" type="file" accept=".xlsx,.xls" onchange="importTeamMembersXlsx(event)"></label>
         <button onclick="toggleCiRow()">CI / favicon 코드</button>
         <div id="ciRow" style="display:none;width:100%">
           <div class="ci-dual-row">
             <div class="ci-box">
               <div class="small">CI 로고 Base64 코드</div>
-              <textarea id="ciBase64Input" placeholder="Base64 코드만 넣어주세요">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</textarea>
+              <textarea id="ciBase64Input"   placeholder="Base64 코드만 넣어주세요">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</textarea>
               <div class="row" style="margin-top:8px">
                 <button onclick="applyCiBase64('logo')">코드 넣기</button>
                 <button onclick="previewCi('logo')">미리보기</button>
@@ -581,30 +874,7 @@
             </div>
             <div class="ci-box">
               <div class="small">favicon Base64 코드</div>
-              <textarea id="faviconBase64Input" placeholder="Base64 코드만 넣어주세요"></textarea>
-              <div class="row" style="margin-top:8px">
-                <button onclick="applyCiBase64('favicon')">코드 넣기</button>
-                <button onclick="previewCi('favicon')">미리보기</button>
-              </div>
-              <div id="ciPreviewFavicon" class="ci-preview"><div class="small">미리보기 없음</div></div>
-            </div>
-          </div>
-        </div>
-        <button onclick="toggleCiRow()">CI / favicon 코드</button>
-        <div id="ciRow" style="display:none;width:100%">
-          <div class="ci-dual-row">
-            <div class="ci-box">
-              <div class="small">CI 로고 Base64 코드</div>
-              <textarea id="ciBase64Input" placeholder="Base64 코드만 넣어주세요">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</textarea>
-              <div class="row" style="margin-top:8px">
-                <button onclick="applyCiBase64('logo')">코드 넣기</button>
-                <button onclick="previewCi('logo')">미리보기</button>
-              </div>
-              <div id="ciPreviewLogo" class="ci-preview"><div class="small">미리보기 없음</div></div>
-            </div>
-            <div class="ci-box">
-              <div class="small">favicon Base64 코드</div>
-              <textarea id="faviconBase64Input" placeholder="Base64 코드만 넣어주세요"></textarea>
+              <textarea id="faviconBase64Input" placeholder="data:image/png;base64,..." placeholder="Base64 코드만 넣어주세요"></textarea>
               <div class="row" style="margin-top:8px">
                 <button onclick="applyCiBase64('favicon')">코드 넣기</button>
                 <button onclick="previewCi('favicon')">미리보기</button>
@@ -614,30 +884,6 @@
           </div>
         </div>
         <button onclick="addTeamMember()">팀원 추가</button>
-        
-        <button onclick="toggleCiRow()">CI / favicon 코드</button>
-        <div id="ciRow" style="display:none;width:100%">
-          <div class="ci-dual-row">
-            <div class="ci-box">
-              <div class="small">CI 로고 Base64 코드</div>
-              <textarea id="ciBase64Input" placeholder="Base64 코드만 넣어주세요">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</textarea>
-              <div class="row" style="margin-top:8px">
-                <button onclick="applyCiBase64('logo')">코드 넣기</button>
-                <button onclick="previewCi('logo')">미리보기</button>
-              </div>
-              <div id="ciPreviewLogo" class="ci-preview"><div class="small">미리보기 없음</div></div>
-            </div>
-            <div class="ci-box">
-              <div class="small">favicon Base64 코드</div>
-              <textarea id="faviconBase64Input" placeholder="Base64 코드만 넣어주세요"></textarea>
-              <div class="row" style="margin-top:8px">
-                <button onclick="applyCiBase64('favicon')">코드 넣기</button>
-                <button onclick="previewCi('favicon')">미리보기</button>
-              </div>
-              <div id="ciPreviewFavicon" class="ci-preview"><div class="small">미리보기 없음</div></div>
-            </div>
-          </div>
-        </div>
         <button onclick="saveTeamMembersToLocal()">저장</button>
         <button onclick="closeHiddenAdmin()">닫기</button>
       </div>
@@ -689,6 +935,7 @@ function showTab(name, btn){
   if(name==='audit') renderRows();
   if(name==='photos') renderPhotosHub();
   if(name==='briefing'){ rebuildBriefingItems(); renderBriefingList(); loadCurrentBriefingPhoto(); }
+  if(name==='data'){ renderDataTab(); }
 
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
@@ -1006,37 +1253,48 @@ function syncRowsFromTable(){
 
 function triggerCamera(rowIndex){ document.getElementById(`cameraInput_${rowIndex}`).click(); }
 function triggerGallery(rowIndex){ document.getElementById(`galleryInput_${rowIndex}`).click(); }
-function attachFilesToRow(event, rowIndex, isCamera){
+
+async function attachFilesToRow(event, rowIndex, isCamera){
   const files=[...event.target.files];
   if(!files.length) return;
-  files.forEach((file, idx)=>{
+  const items = await Promise.all(files.map(async (file, idx)=>{
     const url=URL.createObjectURL(file);
-    photos.push({
+    let dataUrlCache='';
+    try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('dataUrlCache 생성 실패', e); }
+    return {
       id:`ROW${rowIndex}_${Date.now()}_${idx}`,
       file, blob:file,
       name:file.name || `capture_${Date.now()}_${idx}.jpg`,
-      url, rowIndex:String(rowIndex)
-    });
-  });
+      url, rowIndex:String(rowIndex),
+      dataUrlCache
+    };
+  }));
+  photos.push(...items);
   renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
   log(`${rowIndex+1}행에 ${files.length}장 ${isCamera?'촬영':'선택'} 연결 완료`);
   event.target.value='';
 }
 
+
 function linkedPhotosForRow(rowIndex){ return photos.filter(p=>String(p.rowIndex)===String(rowIndex)); }
 function unlinkPhoto(photoId){ hideHoverPreview(); const p=photos.find(x=>x.id===photoId); if(p){ p.rowIndex=''; renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log('사진 연결 해제 완료'); } }
 
-function importPhotosAsUnlinked(event){
+
+async function importPhotosAsUnlinked(event){
   const files=[...event.target.files];
   if(!files.length) return;
-  files.forEach((file,idx)=>{
+  const items = await Promise.all(files.map(async (file,idx)=>{
     const url=URL.createObjectURL(file);
-    photos.push({id:`UP${Date.now()}_${idx}`,file,blob:file,name:file.name,url,rowIndex:''});
-  });
+    let dataUrlCache='';
+    try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('dataUrlCache 생성 실패', e); }
+    return {id:`UP${Date.now()}_${idx}`,file,blob:file,name:file.name,url,rowIndex:'',dataUrlCache};
+  }));
+  photos.push(...items);
   renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
   log(`미연결 사진 ${files.length}장 불러오기 완료`);
   event.target.value='';
 }
+
 function unlinkedPhotos(){ return photos.filter(p=>p.rowIndex===''||p.rowIndex===null||p.rowIndex===undefined); }
 function renderPhotosHub(){
   const strip=document.getElementById('unlinkedPhotos');
@@ -1310,6 +1568,7 @@ function normalizeImportedRow(r){
     extras:r.extras||{}
   });
 }
+
 async function importSessionZip(event){
   const file = event.target.files[0];
   if(!file) return;
@@ -1334,12 +1593,14 @@ async function importSessionZip(event){
   });
 
   for(const p of (session.photos||[])){
-    const fileName = String(p.name || '').replace(/[\\/:*?"<>|]+/g,'_');
+    const fileName = String(p.name || '').replace(/[\/:*?"<>|]+/g,'_');
     const entry = photoMap.get(fileName);
     if(entry){
       const blob = await entry.async('blob');
       const url = URL.createObjectURL(blob);
-      photos.push({id:p.id||`IMP_${Date.now()}`, name:p.name||fileName, rowIndex:p.rowIndex||'', blob, file:null, url});
+      let dataUrlCache='';
+      try{ dataUrlCache = await blobToDataUrl(blob); }catch(e){ console.warn('importSessionZip cache 실패', e); }
+      photos.push({id:p.id||`IMP_${Date.now()}`, name:p.name||fileName, rowIndex:p.rowIndex||'', blob, file:null, url, dataUrlCache});
     }
   }
 
@@ -1347,6 +1608,8 @@ async function importSessionZip(event){
   log(`중간저장 ZIP 불러오기 완료: 행 ${rows.length}개 / 연결사진 ${photos.length}장 / 사용자 열 ${fieldDefs.length}개 복원`);
   event.target.value='';
 }
+
+
 async function parseSessionZipFile(file){
   const zip = await JSZip.loadAsync(file);
   const sessionEntry = zip.file('session.json');
@@ -1365,21 +1628,24 @@ async function parseSessionZipFile(file){
     }
   });
   for(const p of (session.photos||[])){
-    const fileName = String(p.name || '').replace(/[\\/:*?"<>|]+/g,'_');
+    const fileName = String(p.name || '').replace(/[\/:*?"<>|]+/g,'_');
     const entry = photoMap.get(fileName);
     if(entry){
       const blob = await entry.async('blob');
       const url = URL.createObjectURL(blob);
+      let dataUrlCache='';
+      try{ dataUrlCache = await blobToDataUrl(blob); }catch(e){ console.warn('parseSessionZipFile cache 실패', e); }
       importedPhotos.push({
         id: p.id || `IMP_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
         name: p.name || fileName,
-        rowIndex: p.rowIndex,
-        blob, file:null, url
+        rowIndex: p.rowIndex || '',
+        blob, file:null, url, dataUrlCache
       });
     }
   }
-  return {audit: session.audit||{}, rows: importedRows, photos: importedPhotos};
+  return { importedRows, importedPhotos };
 }
+
 function mergeFieldDefs(imported){
   imported.forEach(fd=>{
     if(!fieldDefs.some(x=>x.label===fd.label && x.type===fd.type)){
@@ -1739,15 +2005,85 @@ document.addEventListener('keydown', e=>{
 
 
 
+
+let ciLogoBase64 = '';
+let faviconBase64 = '';
+
+function stripDataImagePrefix(v){
+  let s = String(v || '').trim().replace(/\s+/g,'');
+  return s.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/,'');
+}
+function buildPngDataUri(raw){
+  const pure = stripDataImagePrefix(raw);
+  return pure ? ('data:image/png;base64,' + pure) : '';
+}
+function toggleCiRow(){
+  const el = document.getElementById('ciRow');
+  if(!el) return;
+  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+function loadCiAssetsFromLocal(){
+  // CI는 localStorage를 아예 사용하지 않음
+  const logoInput = document.getElementById('ciBase64Input');
+  const favInput = document.getElementById('faviconBase64Input');
+  ciLogoBase64 = logoInput ? stripDataImagePrefix(logoInput.value) : '';
+  faviconBase64 = favInput ? stripDataImagePrefix(favInput.value) : '';
+  renderCiAssets();
+}
+function saveCiAssetsToLocal(){
+  // intentionally disabled
+}
+function renderCiAssets(){
+  const slot = document.getElementById('biLogoSlot');
+  const logoInput = document.getElementById('ciBase64Input');
+  const favInput = document.getElementById('faviconBase64Input');
+  if(logoInput) logoInput.value = stripDataImagePrefix(logoInput.value);
+  if(favInput) favInput.value = stripDataImagePrefix(favInput.value);
+  ciLogoBase64 = logoInput ? logoInput.value : '';
+  faviconBase64 = favInput ? favInput.value : '';
+  if(slot){
+    const src = buildPngDataUri(ciLogoBase64);
+    if(src){
+      slot.innerHTML = '<img src="' + src + '" alt="CI Logo">';
+    }else{
+      slot.textContent = 'CI LOGO';
+    }
+  }
+}
+function applyCiBase64(kind){
+  if(kind === 'logo'){
+    const input = document.getElementById('ciBase64Input');
+    if(!input) return;
+    input.value = stripDataImagePrefix(input.value);
+    renderCiAssets();
+    previewCi('logo');
+    log('CI 로고 적용 완료');
+  }else{
+    const input = document.getElementById('faviconBase64Input');
+    if(!input) return;
+    input.value = stripDataImagePrefix(input.value);
+    faviconBase64 = input.value;
+    let link = document.querySelector("link[rel~='icon']");
+    if(!link){
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = buildPngDataUri(faviconBase64);
+    previewCi('favicon');
+    log('favicon 적용 완료');
+  }
+}
 function previewCi(kind){
   const inputId = kind === 'logo' ? 'ciBase64Input' : 'faviconBase64Input';
   const previewId = kind === 'logo' ? 'ciPreviewLogo' : 'ciPreviewFavicon';
   const input = document.getElementById(inputId);
   const p = document.getElementById(previewId);
   if(!input || !p) return;
-  const v = buildPngDataUri(input.value);
+  input.value = stripDataImagePrefix(input.value);
+  const src = buildPngDataUri(input.value);
   p.innerHTML = '';
-  if(!v){
+  if(!src){
     p.innerHTML = '<div class="small">미리보기 없음</div>';
     return;
   }
@@ -1755,7 +2091,7 @@ function previewCi(kind){
   img.alt = 'preview';
   img.onload = ()=>{ p.innerHTML=''; p.appendChild(img); };
   img.onerror = ()=>{ p.innerHTML='<div class="small">Base64 형식 확인 필요</div>'; };
-  img.src = v;
+  img.src = src;
 }
 function importBiLogo(event){
   const file = event.target.files && event.target.files[0];
@@ -1763,8 +2099,9 @@ function importBiLogo(event){
   const reader = new FileReader();
   reader.onload = ()=>{
     const full = String(reader.result || '');
-    ciLogoBase64 = full.includes(',') ? full.split(',')[1] : normalizePureBase64(full);
-    saveCiAssetsToLocal();
+    const pure = full.includes(',') ? full.split(',')[1] : stripDataImagePrefix(full);
+    const input = document.getElementById('ciBase64Input');
+    if(input) input.value = pure;
     renderCiAssets();
     previewCi('logo');
     log('CI 로고 적용 완료');
@@ -1773,9 +2110,12 @@ function importBiLogo(event){
   event.target.value = '';
 }
 function clearBiLogo(){
+  const logoInput = document.getElementById('ciBase64Input');
+  const favInput = document.getElementById('faviconBase64Input');
+  if(logoInput) logoInput.value = '';
+  if(favInput) favInput.value = '';
   ciLogoBase64 = '';
   faviconBase64 = '';
-  saveCiAssetsToLocal();
   renderCiAssets();
   const link = document.querySelector("link[rel~='icon']");
   if(link) link.href = '';
@@ -1871,11 +2211,12 @@ function saveTeamMembersToLocal(){
   }
 }
 function openHiddenAdmin(){
-  hiddenAdminOverlay.style.display = 'flex';
+  const overlay = document.getElementById('hiddenAdminOverlay');
+  if(overlay) overlay.style.display = 'flex';
   renderTeamMembers();
-  autoApplyCiFromTextarea();
-  try{ previewCi('logo'); }catch(e){}
-  try{ previewCi('favicon'); }catch(e){}
+  renderCiAssets();
+  previewCi('logo');
+  previewCi('favicon');
 }
 function closeHiddenAdmin(){
   hiddenAdminOverlay.style.display = 'none';
@@ -1976,13 +2317,13 @@ function renderTeamMembers(){
           <button class="collapse-toggle" onclick="removeTeamMember('${tm.id}')">삭제</button>
         </div>
       </div>
-      <div class="team-card-grid" style="margin-top:10px">
+      <div class="team-card-grid" style="margin-top:0">
         <div>
           <div class="small">팀원명</div>
           <input class="tm-name" value="${tm.name||''}" placeholder="팀원명">
-          <div class="small" style="margin-top:10px">직급</div>
+          <div class="small" style="margin-top:0">직급</div>
           <input class="tm-rank" value="${tm.rank||''}" placeholder="예: 과장, 대리">
-          <div class="small" style="margin-top:10px">사번(숫자 6자리)</div>
+          <div class="small" style="margin-top:0">사번(숫자 6자리)</div>
           <input class="tm-empno" inputmode="numeric" value="${tm.empNo||''}" placeholder="123456">
           <div class="mini-note">숫자만 허용, 6자리까지만 저장</div>
         </div>
@@ -2085,218 +2426,364 @@ window.addEventListener('scroll', hideHoverPreview, { passive: true });
 window.addEventListener('resize', hideHoverPreview);
 
 
-function normalizePureBase64(v){
-  return String(v || '').trim().replace(/\s+/g,'');
-}
-function buildPngDataUri(raw){
-  const pure = normalizePureBase64(raw);
-  return pure ? ('data:image/png;base64,' + pure) : '';
-}
-function toggleCiRow(){
-  const el = document.getElementById('ciRow');
-  if(!el) return;
-  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
-}
-function previewCi(kind){
-  const inputId = kind === 'logo' ? 'ciBase64Input' : 'faviconBase64Input';
-  const previewId = kind === 'logo' ? 'ciPreviewLogo' : 'ciPreviewFavicon';
-  const input = document.getElementById(inputId);
-  const p = document.getElementById(previewId);
-  if(!input || !p) return;
-  const v = buildPngDataUri(input.value);
-  p.innerHTML = '';
-  if(!v){
-    p.innerHTML = '<div class="small">미리보기 없음</div>';
-    return;
-  }
-  const img = document.createElement('img');
-  img.alt = 'preview';
-  img.onload = ()=>{ p.innerHTML=''; p.appendChild(img); };
-  img.onerror = ()=>{ p.innerHTML='<div class="small">Base64 형식 확인 필요</div>'; };
-  img.src = v;
+function renderDataTab(){
+  const mainPrefix = document.getElementById('photoPrefix');
+  const mainMax = document.getElementById('maxSize');
+  const mainQuality = document.getElementById('quality');
+  const dataPrefix = document.getElementById('dataPhotoPrefix');
+  const dataMax = document.getElementById('dataMaxSize');
+  const dataQuality = document.getElementById('dataQuality');
+  if(mainPrefix && dataPrefix) dataPrefix.value = mainPrefix.value || dataPrefix.value;
+  if(mainMax && dataMax) dataMax.value = mainMax.value || dataMax.value;
+  if(mainQuality && dataQuality) dataQuality.value = mainQuality.value || dataQuality.value;
 }
 
-function autoApplyCiFromTextarea(){
+function syncDataPhotoOptionsToMain(){
+  const mainPrefix = document.getElementById('photoPrefix');
+  const mainMax = document.getElementById('maxSize');
+  const mainQuality = document.getElementById('quality');
+  const dataPrefix = document.getElementById('dataPhotoPrefix');
+  const dataMax = document.getElementById('dataMaxSize');
+  const dataQuality = document.getElementById('dataQuality');
+  if(mainPrefix && dataPrefix) mainPrefix.value = dataPrefix.value;
+  if(mainMax && dataMax) mainMax.value = dataMax.value;
+  if(mainQuality && dataQuality) mainQuality.value = dataQuality.value;
+}
+
+function buildShemsUploadRows(){
+  return buildRawdbRowsWithPhotoNames();
+}
+
+function downloadShemsUploadXlsx(){
+  const data = buildShemsUploadRows();
+  if(!data.length){ log('SHE-MS 업로드용 XLSX 다운로드 실패: 데이터가 없습니다.'); return; }
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SHEMS_UPLOAD');
+  XLSX.writeFile(wb, 'audit_shems_upload.xlsx');
+  log(`SHE-MS 업로드용 XLSX 다운로드 완료: ${data.length}행`);
+}
+
+async function downloadRawDbXlsm(){
+  const input = document.getElementById('rawDbXlsmTemplate');
+  const file = input && input.files && input.files[0];
+  if(!file){ log('RAW DB 보관용 XLSM 실패: 먼저 .xlsm 템플릿을 불러와 주세요.'); return; }
+  try{
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, { type:'array', bookVBA:true });
+    const ws = XLSX.utils.json_to_sheet(buildRawdbRowsWithPhotoNames());
+
+    wb.Sheets['RAW_DB'] = ws;
+    if(!wb.SheetNames.includes('RAW_DB')){
+      wb.SheetNames.unshift('RAW_DB');
+    }
+
+    const outName = file.name.replace(/\.xlsm$/i, '') + '_filled.xlsm';
+    XLSX.writeFile(wb, outName, { bookType:'xlsm', bookVBA:true });
+    log(`RAW DB 보관용 XLSM 다운로드 완료: ${outName}`);
+  }catch(e){
+    log('RAW DB 보관용 XLSM 실패: ' + e.message);
+  }
+}
+
+async function downloadOriginalsAndCompressedFromDataTab(){
+  syncDataPhotoOptionsToMain();
+  await saveLinkedPhotosOnly();
+}
+
+
+
+function getCurrentCiLogoDataUri(){
   const ciInput = document.getElementById('ciBase64Input');
-  if(!ciInput) return;
-  ciInput.value = stripDataImagePrefix(ciInput.value);
-  const slot = document.getElementById('biLogoSlot');
-  if(!slot) return;
-  const src = buildPngDataUri(ciInput.value);
-  if(src){
-    slot.innerHTML = '<img src="' + src + '" alt="CI Logo">';
-  }else{
-    slot.textContent = 'CI LOGO';
+  const slotImg = document.querySelector('#biLogoSlot img');
+  if(ciInput && ciInput.value){
+    const raw = String(ciInput.value).trim().replace(/\s+/g,'').replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/,'');
+    if(raw) return 'data:image/png;base64,' + raw;
+  }
+  if(slotImg && slotImg.src) return slotImg.src;
+  return '';
+}
+
+async function blobToDataUrl(blob){
+  return await new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dataUrlToUint8Array(dataUrl){
+  const parts = String(dataUrl || '').split(',');
+  if(parts.length < 2) throw new Error('dataURL 형식 오류');
+  const binary = atob(parts[1]);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function photoToDataUrl(photo){
+  if(!photo) return '';
+  if(photo.dataUrlCache && /^data:image\//i.test(photo.dataUrlCache)) return photo.dataUrlCache;
+  try{
+    if(photo.blob){
+      const dataUrl = await blobToDataUrl(photo.blob);
+      photo.dataUrlCache = dataUrl;
+      return dataUrl;
+    }
+    if(photo.file){
+      const dataUrl = await blobToDataUrl(photo.file);
+      photo.dataUrlCache = dataUrl;
+      return dataUrl;
+    }
+  }catch(e){
+    console.warn('blob/file -> dataURL 실패', e);
+  }
+  const url = photo.url || '';
+  if(!url) return '';
+  if(/^data:image\//i.test(url)){
+    photo.dataUrlCache = url;
+    return url;
+  }
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const dataUrl = await blobToDataUrl(blob);
+    photo.dataUrlCache = dataUrl;
+    return dataUrl;
+  }catch(e){
+    console.warn('photoToDataUrl fallback 실패', e);
+    return '';
   }
 }
 
-function applyCiBase64(kind){
-  if(kind === 'logo'){
-    const el = document.getElementById('ciBase64Input');
-    const slot = document.getElementById('biLogoSlot');
-    if(!el || !slot) return;
-    const v = buildPngDataUri(el.value);
-    if(v){
-      slot.innerHTML = '<img src="' + v + '" alt="CI Logo">';
-      previewCi('logo');
-      log('CI 로고 적용 완료');
+async function compressImageDataUrl(dataUrl, maxEdge, quality){
+  if(!dataUrl) return '';
+  const img = new Image();
+  img.src = dataUrl;
+  await new Promise((resolve, reject)=>{ img.onload = resolve; img.onerror = reject; });
+  const w = img.naturalWidth || 1200;
+  const h = img.naturalHeight || 800;
+  const ratio = Math.min(1, Number(maxEdge || 1280) / Math.max(w, h));
+  const nw = Math.max(1, Math.round(w * ratio));
+  const nh = Math.max(1, Math.round(h * ratio));
+  const canvas = document.createElement('canvas');
+  canvas.width = nw;
+  canvas.height = nh;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, nw, nh);
+  return canvas.toDataURL('image/jpeg', Number(quality || 0.75));
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function buildPdfPageElement(item, photo, photoIdx, totalPhotos, pageNumber, totalPages, logoSrc, maxEdge, quality){
+  const page = document.createElement('div');
+  page.className = 'pdf-render-page';
+
+  let photoDataUrl = await photoToDataUrl(photo);
+  if(photoDataUrl){
+    photoDataUrl = await compressImageDataUrl(photoDataUrl, maxEdge, quality);
+  }
+
+  const metaLines = [
+    `PART: ${item.row.part || ''}`,
+    `카테고리: ${item.row.category6 || ''}`,
+    `결과: ${item.row.result || ''}`,
+    `위험분류: ${item.row.riskType || ''}`,
+    `사진: ${photoIdx}/${totalPhotos} / ${photo.name || ''}`
+  ].join('\n');
+
+  page.innerHTML = `
+    <div class="pdf-render-header">
+      <div class="pdf-render-title">강평 브리핑</div>
+      ${logoSrc ? `<img class="pdf-render-logo" src="${logoSrc}" alt="CI Logo">` : ''}
+    </div>
+    <div class="pdf-render-item-title">${escapeHtml(item.rowIndex + 1)}행 / ${escapeHtml(item.row.title || '(제목없음)')}</div>
+    <div class="pdf-render-meta">${escapeHtml(metaLines)}</div>
+    <div class="pdf-render-main">${escapeHtml(item.row.mainText || '-')}</div>
+    <div class="pdf-render-photo-wrap">
+      ${photoDataUrl ? `<img class="pdf-render-photo" src="${photoDataUrl}" alt="photo">` : '<div class="small">사진 없음</div>'}
+    </div>
+    <div class="pdf-render-footer">${pageNumber}/${totalPages}</div>
+  `;
+  return page;
+}
+
+async function downloadBriefingPdf(){
+  rebuildBriefingItems();
+  if(!briefingItems.length) throw new Error('연결된 항목이 없습니다.');
+  const jspdf = window.jspdf;
+  if(!jspdf || !jspdf.jsPDF) throw new Error('jsPDF 로드 실패');
+  if(typeof html2canvas === 'undefined') throw new Error('html2canvas 로드 실패');
+
+  const pages = [];
+  for(const item of briefingItems){
+    for(let i=0;i<item.linkedPhotos.length;i++){
+      pages.push({ item, photo:item.linkedPhotos[i], photoIdx:i+1, totalPhotos:item.linkedPhotos.length });
     }
-  }else{
-    const el = document.getElementById('faviconBase64Input');
-    if(!el) return;
-    const v = buildPngDataUri(el.value);
-    let link = document.querySelector("link[rel~='icon']");
-    if(!link){
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
+  }
+  if(!pages.length) throw new Error('연결된 사진이 없습니다.');
+
+  const logoSrc = getCurrentCiLogoDataUri();
+  const maxEdge = Number((document.getElementById('pdfMaxEdge') || {}).value || 1280);
+  const quality = Number((document.getElementById('pdfQuality') || {}).value || 0.75);
+
+  const doc = new window.jspdf.jsPDF({ orientation:'portrait', unit:'pt', format:'a4', compress:true });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  const host = document.createElement('div');
+  host.style.position = 'fixed';
+  host.style.left = '-100000px';
+  host.style.top = '0';
+  host.style.zIndex = '-1';
+  document.body.appendChild(host);
+
+  for(let idx=0; idx<pages.length; idx++){
+    const p = pages[idx];
+    const pageEl = await buildPdfPageElement(p.item, p.photo, p.photoIdx, p.totalPhotos, idx+1, pages.length, logoSrc, maxEdge, quality);
+    host.innerHTML = '';
+    host.appendChild(pageEl);
+
+    const canvas = await html2canvas(pageEl, {
+      scale: Math.min(2, window.devicePixelRatio || 1.5),
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', quality);
+    if(idx > 0) doc.addPage();
+    doc.addImage(imgData, 'JPEG', 0, 0, pageW, pageH, undefined, 'FAST');
+  }
+
+  host.remove();
+  doc.save('briefing_export.pdf');
+  if(typeof log === 'function') log(`강평 PDF 생성 완료: ${pages.length}페이지`);
+}
+
+async function safeDownloadPdf(){
+  try{
+    if(typeof html2canvas === 'undefined'){
+      alert('PDF 생성 오류: html2canvas 로드 실패');
+      return;
     }
-    link.href = v || '';
-    previewCi('favicon');
-    log('favicon 적용 완료');
+    if(typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF){
+      alert('PDF 생성 오류: jsPDF 로드 실패');
+      return;
+    }
+    await downloadBriefingPdf();
+  }catch(e){
+    console.error(e);
+    alert('PDF 생성 오류: ' + (e && e.message ? e.message : e));
+  }
+}
+
+async function downloadPhotosAsZip(){
+  try{
+    if(typeof JSZip === 'undefined'){
+      alert('ZIP 라이브러리 로드 실패');
+      return;
+    }
+    syncRowsFromTable();
+    const zip = new JSZip();
+    const originals = zip.folder("originals");
+    const compressed = zip.folder("compressed");
+    const maxEdge = Number((document.getElementById('dataMaxSize')||{}).value || 1280);
+    const quality = Number((document.getElementById('dataQuality')||{}).value || 0.75);
+
+    const linked = (Array.isArray(photos) ? photos : []).filter(
+      p => p && p.rowIndex !== '' && p.rowIndex !== null && p.rowIndex !== undefined
+    );
+    if(!linked.length){
+      alert('연결된 사진이 없습니다.');
+      return;
+    }
+
+    const byRow = {};
+    linked.forEach(p=>{
+      const key = String(p.rowIndex);
+      byRow[key] = byRow[key] || [];
+      byRow[key].push(p);
+    });
+
+    let savedCount = 0;
+    let failCount = 0;
+
+    for(const rowIdx of Object.keys(byRow)){
+      const arr = byRow[rowIdx];
+      for(let i=0;i<arr.length;i++){
+        const p = arr[i];
+        try{
+          let newName = '';
+          if(typeof buildPhotoFilename === 'function') newName = buildPhotoFilename(p, i);
+          if(!newName){
+            const prefix = String((document.getElementById('dataPhotoPrefix')||{}).value || 'AUDIT').trim() || 'AUDIT';
+            const rowNo = Number(rowIdx) + 1;
+            const seq = String(i+1).padStart(2,'0');
+            newName = `${prefix}_${String(rowNo).padStart(3,'0')}_${seq}.jpg`;
+          }
+
+          const originalDataUrl = await photoToDataUrl(p);
+          if(!originalDataUrl) throw new Error('원본 이미지 읽기 실패');
+          originals.file(newName, dataUrlToUint8Array(originalDataUrl), {binary:true});
+
+          let compressedDataUrl = originalDataUrl;
+          try{
+            const maybeCompressed = await compressImageDataUrl(originalDataUrl, maxEdge, quality);
+            if(maybeCompressed) compressedDataUrl = maybeCompressed;
+          }catch(e){ console.warn('압축본 생성 실패, 원본 대체', e); }
+
+          const compressedName = newName.replace(/(\.[^.]+)?$/, '_c.jpg');
+          compressed.file(compressedName, dataUrlToUint8Array(compressedDataUrl), {binary:true});
+
+          savedCount++;
+        }catch(err){
+          failCount++;
+          console.error('개별 사진 ZIP 처리 실패:', p, err);
+        }
+      }
+    }
+
+    if(savedCount === 0){
+      alert('ZIP 생성 실패: 처리된 사진이 없습니다.');
+      return;
+    }
+
+    const content = await zip.generateAsync({
+      type: 'blob',
+      compression: 'STORE',
+      streamFiles: true
+    });
+
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(content);
+    link.href = url;
+    link.download = 'audit_photos.zip';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);
+      link.remove();
+    }, 1500);
+
+    if(typeof log === 'function') log(`원본+압축본 ZIP 저장 완료: 성공 ${savedCount}건 / 실패 ${failCount}건`);
+    if(failCount > 0){
+      alert(`ZIP 저장 완료\n성공: ${savedCount}건\n실패: ${failCount}건`);
+    }
+  }catch(e){
+    console.error(e);
+    alert('원본+압축본 ZIP 저장 중 오류: ' + (e && e.message ? e.message : e));
   }
 }
 
 
-function normalizePureBase64(v){
-  return String(v || '').trim().replace(/\s+/g,'');
-}
-function buildPngDataUri(raw){
-  const pure = normalizePureBase64(raw);
-  return pure ? ('data:image/png;base64,' + pure) : '';
-}
-function toggleCiRow(){
-  const el = document.getElementById('ciRow');
-  if(!el) return;
-  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
-}
-function previewCi(kind){
-  const inputId = kind === 'logo' ? 'ciBase64Input' : 'faviconBase64Input';
-  const previewId = kind === 'logo' ? 'ciPreviewLogo' : 'ciPreviewFavicon';
-  const input = document.getElementById(inputId);
-  const p = document.getElementById(previewId);
-  if(!input || !p) return;
-  const src = buildPngDataUri(input.value);
-  p.innerHTML = '';
-  if(!src){
-    p.innerHTML = '<div class="small">미리보기 없음</div>';
-    return;
-  }
-  const img = document.createElement('img');
-  img.alt = 'preview';
-  img.onload = ()=>{ p.innerHTML=''; p.appendChild(img); };
-  img.onerror = ()=>{ p.innerHTML='<div class="small">Base64 형식 확인 필요</div>'; };
-  img.src = src;
-}
-function applyCiBase64(kind){
-  if(kind === 'logo'){
-    const input = document.getElementById('ciBase64Input');
-    const slot = document.getElementById('biLogoSlot');
-    if(!input || !slot) return;
-    const src = buildPngDataUri(input.value);
-    if(src){
-      slot.innerHTML = '<img src="' + src + '" alt="CI Logo">';
-    }else{
-      slot.textContent = 'CI LOGO';
-    }
-    previewCi('logo');
-    log('CI 로고 적용 완료');
-  }else{
-    const input = document.getElementById('faviconBase64Input');
-    if(!input) return;
-    const src = buildPngDataUri(input.value);
-    let link = document.querySelector("link[rel~='icon']");
-    if(!link){
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }
-    link.href = src || '';
-    previewCi('favicon');
-    log('favicon 적용 완료');
-  }
-}
-
-
-let ciLogoBase64 = '';
-let faviconBase64 = '';
-
-function stripDataImagePrefix(v){
-  let s = String(v || '').trim().replace(/\s+/g,'');
-  return s.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/,'');
-}
-function buildPngDataUri(raw){
-  const pure = stripDataImagePrefix(raw);
-  return pure ? ('data:image/png;base64,' + pure) : '';
-}
-function toggleCiRow(){
-  const el = document.getElementById('ciRow');
-  if(!el) return;
-  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
-}
-function previewCi(kind){
-  const inputId = kind === 'logo' ? 'ciBase64Input' : 'faviconBase64Input';
-  const previewId = kind === 'logo' ? 'ciPreviewLogo' : 'ciPreviewFavicon';
-  const input = document.getElementById(inputId);
-  const p = document.getElementById(previewId);
-  if(!input || !p) return;
-  input.value = stripDataImagePrefix(input.value); // 입력칸은 항상 순수 base64만 유지
-  const src = buildPngDataUri(input.value);
-  p.innerHTML = '';
-  if(!src){
-    p.innerHTML = '<div class="small">미리보기 없음</div>';
-    return;
-  }
-  const img = document.createElement('img');
-  img.alt = 'preview';
-  img.onload = ()=>{ p.innerHTML=''; p.appendChild(img); };
-  img.onerror = ()=>{ p.innerHTML='<div class="small">Base64 형식 확인 필요</div>'; };
-  img.src = src;
-}
-function applyCiBase64(kind){
-  if(kind === 'logo'){
-    const input = document.getElementById('ciBase64Input');
-    const slot = document.getElementById('biLogoSlot');
-    if(!input || !slot) return;
-    input.value = stripDataImagePrefix(input.value); // 입력칸 정화
-    const src = buildPngDataUri(input.value);
-    if(src){
-      slot.innerHTML = '<img src="' + src + '" alt="CI Logo">';
-    }else{
-      slot.textContent = 'CI LOGO';
-    }
-    previewCi('logo');
-    log('CI 로고 적용 완료');
-  }else{
-    const input = document.getElementById('faviconBase64Input');
-    if(!input) return;
-    input.value = stripDataImagePrefix(input.value); // 입력칸 정화
-    const src = buildPngDataUri(input.value);
-    let link = document.querySelector("link[rel~='icon']");
-    if(!link){
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }
-    link.href = src || '';
-    previewCi('favicon');
-    log('favicon 적용 완료');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  autoApplyCiFromTextarea();
-  try{ previewCi('logo'); }catch(e){}
-});
 clearAll();
-
-window.addEventListener('load', ()=>{
-  try{ autoApplyCiFromTextarea(); }catch(e){}
-  try{ previewCi('logo'); }catch(e){}
-});
-
 setTimeout(()=>{
-  try{ autoApplyCiFromTextarea(); }catch(e){}
+  try{ loadCiAssetsFromLocal(); }catch(e){}
   try{ previewCi('logo'); }catch(e){}
 }, 0);
 
