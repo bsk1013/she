@@ -76,7 +76,7 @@
   button:hover{border-color:var(--primary-2); background:#f7fbff}
   button:active{transform:translateY(1px)}
 
-  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:0}
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}
   th,td{
     border-bottom:1px solid var(--border);
     padding:9px 8px;
@@ -296,7 +296,7 @@
 
   .topbar-shell{display:flex;align-items:center;justify-content:space-between;gap:14px}
   .tabbar{margin-left:auto;justify-content:flex-end}
-  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0;width:100%}
+  .ci-dual-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;width:100%}
   @media (max-width:900px){.ci-dual-row{grid-template-columns:1fr}}
   .ci-box{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface-2)}
   .ci-box textarea{width:100%;min-height:110px}
@@ -320,7 +320,7 @@
   .data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
   .data-card{border:1px solid var(--border);border-radius:16px;padding:16px;background:linear-gradient(180deg,#ffffff 0%, #f9fbfe 100%);box-shadow:0 8px 20px rgba(15,23,42,.05)}
   .data-card h3{margin:0 0 8px 0}
-  .data-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:0}
+  .data-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
   @media (max-width:700px){
     .data-actions button,
@@ -418,7 +418,7 @@
     border-radius:18px;
     box-shadow:var(--shadow);
     position:sticky;
-    top:0;
+    top:10px;
     z-index:20;
     backdrop-filter:blur(10px);
   }
@@ -533,15 +533,29 @@
 
 
 
-.audit-table-card{
-  overflow-x:auto;
-  overflow-y:hidden;
-  -ms-overflow-style:none;
-  scrollbar-width:none;
-}
-.audit-table-card::-webkit-scrollbar{display:none}
-#auditTbl{min-width:1180px}
+  .audit-table-card{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .audit-table-card::-webkit-scrollbar{display:none}
+  #tbl{min-width:1180px}
 
+
+  .audit-table-scroll{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+    width:100%;
+  }
+  .audit-table-scroll::-webkit-scrollbar{display:none}
+  #tbl{min-width:1180px}
+
+
+  .auditDropRow{transition: background-color .12s ease, outline-color .12s ease;}
+  .auditDropRow.dragover{background:rgba(86,147,255,.05); outline:1px dashed rgba(86,147,255,.30); outline-offset:-2px;}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -550,7 +564,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-
 </div>
 
 <div class="topbar-shell"><div class="bi-slot" id="biLogoSlot">CI LOGO</div><div class="tabbar">
@@ -570,7 +583,7 @@
       <button onclick="downloadChecklistJSON()">체크리스트 저장(JSON)</button>
       <label class="file-btn"><span>체크리스트 불러오기</span><input id="jsonFile" type="file" accept=".json" onchange="importChecklistJSON(event)"></label>
     </div>
-    <div class="row" style="margin-top:0">
+    <div class="row" style="margin-top:10px">
       <div>빠른 입력도구:</div>
       <button class="pillbtn" onclick="addRow({part:'안전',category6:'유해위험방지 조치',title:'',mainText:'',score:2,result:'보완',riskType:'기계설비적요인',photoTag:'',extras:{}})">안전 항목</button>
       <button class="pillbtn" onclick="addRow({part:'보건',category6:'근로자 보건관리',title:'',mainText:'',score:2,result:'보완',riskType:'작업환경요인',photoTag:'',extras:{}})">보건 항목</button>
@@ -608,26 +621,13 @@
     <table id="editorTbl">
       <thead></thead>
       <tbody></tbody>
-    </table></div>
+    </table>
   </div>
 </div>
 
-<div id="tab-audit" class="tabpage">
-  <div class="card">
-    <div class="row">
-      <button onclick="clearAll(false)">점검값만 초기화</button>
-      <button onclick="downloadRawdbXlsx()">RAW DB XLSX 다운로드</button>
-      <button onclick="exportSessionZip()">중간저장 ZIP</button>
-      <button onclick="sendSessionZipByEmail()">중간저장 ZIP 보내기</button>
-      <label class="file-btn"><span>중간저장 ZIP 불러오기</span><input id="sessionZipFile" type="file" accept=".zip" onchange="importSessionZip(event)"></label>
-      <label class="file-btn"><span>취합 ZIP 불러오기(복수)</span><input id="sessionZipMultiFile" type="file" accept=".zip" multiple onchange="importMultipleSessionZips(event)"></label>
-    </div>
-    <div class="row" style="margin-top:0">
-      <div>점검자 이메일 <input id="recipientEmail" type="email" placeholder="example@company.com"></div>
-    </div>
-    <div class="small" style="margin-top:8px">메일 앱에서 ZIP 첨부는 직접 추가해야 합니다.</div>
-  </div>
 
+
+<div id="tab-audit" class="tabpage">
   <div class="card">
     <div class="row">
       <div>평가년도 <input id="evalYear" value=""></div>
@@ -639,49 +639,61 @@
     <div class="small" id="headerWarn" style="margin-top:8px"></div>
   </div>
 
-  <div class="card">
-    <table id="tbl">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
+  <div class="row" style="align-items:stretch">
+    <div style="flex:1;min-width:320px">
+      <div class="card">
+        <div class="row">
+          <button onclick="clearAll(false)">점검값만 초기화</button>
+          <button onclick="downloadRawdbXlsx()">RAW DB XLSX 다운로드</button>
+          <button onclick="exportSessionZip()">중간저장 ZIP</button>
+          <button onclick="sendSessionZipByEmail()">중간저장 ZIP 보내기</button>
+          <label class="file-btn"><span>취합 ZIP 불러오기(복수/누적)</span><input id="sessionZipMultiFile" type="file" accept=".zip" multiple onchange="importMultipleSessionZips(event)"></label>
+          <button onclick="sortRowsByPart()">파트별 정렬</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div>점검자 이메일 <input id="recipientEmail" type="email" placeholder="example@company.com"></div>
+        </div>
+        <div class="small" style="margin-top:8px">여러 사람의 취합 ZIP를 누적 불러와 한 곳에서 강평합니다.</div>
+      </div>
+    </div>
 
-<div id="tab-photos" class="tabpage">
-  <div class="card">
-    <div class="row">
-      <label class="file-btn"><span>미연결 사진 불러오기</span><input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)"></label>
-      <button onclick="deleteAllUnlinkedPhotos()">미연결 전체 삭제</button>
-      <button onclick="saveLinkedPhotosOnly()">원본+압축본 저장하기</button>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <div>파일명 Prefix <input id="photoPrefix" value="AUDIT"></div>
-      <div>긴변(px)
-        <select id="maxSize">
-          <option value="0">원본 유지</option>
-          <option value="2000">2000</option>
-          <option value="1600" selected>1600</option>
-          <option value="1280">1280</option>
-          <option value="1024">1024</option>
-        </select>
+    <div style="flex:1;min-width:320px">
+      <div class="card">
+        <div class="row">
+          <label class="file-btn"><span>미연결 사진 불러오기</span><input id="photoFile" type="file" multiple accept="image/*" onchange="importPhotosAsUnlinked(event)"></label>
+          <button onclick="deleteAllUnlinkedPhotos()">미연결 전체 삭제</button>
+          <button onclick="showTab('photos', document.querySelector('.tabbtn[onclick*=\'photos\']')); renderPhotosHub()">사진 연결 탭 크게 보기</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div>파일명 Prefix <input id="photoPrefix" value="AUDIT"></div>
+          <div>긴변(px)
+            <select id="maxSize">
+              <option value="0">원본 유지</option>
+              <option value="2000">2000</option>
+              <option value="1600" selected>1600</option>
+              <option value="1280">1280</option>
+              <option value="1024">1024</option>
+            </select>
+          </div>
+          <div>품질
+            <select id="quality">
+              <option value="0.9">0.9</option>
+              <option value="0.8">0.8</option>
+              <option value="0.75" selected>0.75</option>
+              <option value="0.7">0.7</option>
+              <option value="0.6">0.6</option>
+            </select>
+          </div>
+        </div>
+        <div class="small" id="photoWarn" style="margin-top:8px"></div>
       </div>
-      <div>품질
-        <select id="quality">
-          <option value="0.9">0.9</option>
-          <option value="0.8">0.8</option>
-          <option value="0.75" selected>0.75</option>
-          <option value="0.7">0.7</option>
-          <option value="0.6">0.6</option>
-        </select>
-      </div>
     </div>
-    <div class="small" id="photoWarn" style="margin-top:8px"></div>
   </div>
 
   <div class="card sticky-under-topbar">
     <div class="row" style="justify-content:space-between">
       <h3 style="margin:0">미연결 사진</h3>
-      <div class="small">드래그앤드롭 또는 드롭다운 직접연결</div>
+      <div class="small">사진이 많아도 가로 스크롤로 넘겨볼 수 있습니다.</div>
     </div>
     <div class="photoStripWrap">
       <div id="unlinkedPhotos" class="photoStrip"></div>
@@ -689,8 +701,29 @@
   </div>
 
   <div class="card">
+    <div class="small" style="margin-bottom:8px">체크리스트 행 아무 곳에나 사진을 바로 드래그앤드롭할 수 있습니다.</div>
+    <div class="audit-table-scroll">
+      <table id="tbl">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
     <h3 style="margin-top:0">점검항목별 연결 상태</h3>
     <div id="dropCards"></div>
+  </div>
+</div>
+
+
+<div id="tab-photos" class="tabpage">
+  <div class="card">
+    <h2 style="margin-top:0">사진 연결</h2>
+    <div class="small">사진 연결 기능은 점검입력 탭에 통합되었습니다. 이 탭은 예비/확장 작업용으로만 유지합니다.</div>
+    <div class="row" style="margin-top:10px">
+      <button onclick="showTab('audit', document.querySelector('.tabbtn[onclick*=\'audit\']')); renderRows(); renderPhotosHub();">점검입력으로 이동</button>
+    </div>
   </div>
 </div>
 
@@ -730,11 +763,11 @@
       <div class="metaTitle" id="metaTitle">-</div>
       <div style="margin-bottom:10px"><span class="badge" id="metaPart">-</span><span class="badge" id="metaResult">-</span><span class="badge" id="metaCategory">-</span></div>
       <div class="small">항목</div><div id="metaRowNo" class="metaText">-</div>
-      <div class="small" style="margin-top:0">위험분류</div><div id="metaRisk" class="metaText">-</div>
-      <div class="small" style="margin-top:0">주요내용</div><div id="metaText" class="metaText">-</div>
-      <div class="small" style="margin-top:0">사진태그</div><div id="metaTag" class="metaText">-</div>
-      <div class="small" style="margin-top:0">사진</div><div id="metaPhotoIndex" class="metaText">-</div>
-      <div class="small" style="margin-top:0">연결 항목 목록</div><div id="briefingList" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">위험분류</div><div id="metaRisk" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">주요내용</div><div id="metaText" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">사진태그</div><div id="metaTag" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">사진</div><div id="metaPhotoIndex" class="metaText">-</div>
+      <div class="small" style="margin-top:10px">연결 항목 목록</div><div id="briefingList" class="metaText">-</div>
     </div>
   </div>
 </div>
@@ -746,19 +779,7 @@
 
 
 
-<div id="tab-data">
-
-<div class="data-card">
-  <h3>ZIP 누적 불러오기</h3>
-  <div class="data-actions">
-    <label class="file-btn">
-      <span>취합 ZIP 불러오기(복수/누적)</span>
-      <input type="file" multiple accept=".zip" onchange="importMultipleSessionZips(event)">
-    </label>
-    <button onclick="sortRowsByPart()">파트별 정렬</button>
-  </div>
-</div>
- class="tabpage">
+<div id="tab-data" class="tabpage">
   <div class="card">
     <h2 style="margin-top:0">데이터</h2>
     <div class="small">배포/보관/사진 저장/PDF 생성을 한 곳에서 실행합니다.</div>
@@ -786,7 +807,7 @@
     <div class="data-card">
       <h3>사진 원본+압축본</h3>
       <div class="small">현행 폴더 선택 후 originals / compressed 하위 폴더에 저장합니다.</div>
-      <div class="row" style="margin-top:0">
+      <div class="row" style="margin-top:10px">
         <div>파일명 Prefix <input id="dataPhotoPrefix" value="AUDIT"></div>
       </div>
       <div class="row" style="margin-top:8px">
@@ -818,7 +839,7 @@
     <div class="data-card">
       <h3>강평 PDF</h3>
       <div class="small">연결된 항목과 사진을 페이지 단위 PDF로 생성합니다. 우측 상단에는 CI 로고를 반복 삽입합니다.</div>
-      <div class="row" style="margin-top:0">
+      <div class="row" style="margin-top:10px">
         <div>사진 긴변(px)
           <select id="pdfMaxEdge">
             <option value="1600">1600</option>
@@ -1181,17 +1202,17 @@ function renderRows(){
   tb.innerHTML=rows.map((r,i)=>{
     ensureRowExtras(r);
     return `
-    <tr data-row="${i}">
-      <td><select class="f-part">${PARTS.map(x=>`<option ${x===r.part?'selected':''}>${x}</option>`).join('')}</select></td>
-      <td><select class="f-category6">${CAT6.map(x=>`<option ${x===r.category6?'selected':''}>${x}</option>`).join('')}</select></td>
-      <td><textarea class="f-title">${r.title||''}</textarea></td>
-      <td><textarea class="f-mainText">${r.mainText||''}</textarea></td>
-      <td><input type="number" class="f-score" value="${r.score}" style="width:70px"></td>
-      <td><select class="f-result"><option ${r.result==='적정'?'selected':''}>적정</option><option ${r.result==='보완'?'selected':''}>보완</option><option ${r.result==='해당없음'?'selected':''}>해당없음</option></select></td>
-      <td><select class="f-riskType">${RISK7.map(x=>`<option ${x===r.riskType?'selected':''}>${x}</option>`).join('')}</select></td>
-      <td><input class="f-photoTag" value="${r.photoTag||''}"></td>
-      ${fieldDefs.map(fd=>`<td>${renderFieldInputForAudit(fd, r.extras[fd.id])}</td>`).join('')}
-      <td>
+    <tr data-row="${i}" class="auditDropRow" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})" ondragleave="clearAuditDropHighlight()">
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><select class="f-part">${PARTS.map(x=>`<option ${x===r.part?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><select class="f-category6">${CAT6.map(x=>`<option ${x===r.category6?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><textarea class="f-title">${r.title||''}</textarea></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><textarea class="f-mainText">${r.mainText||''}</textarea></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><input type="number" class="f-score" value="${r.score}" style="width:70px"></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><select class="f-result"><option ${r.result==='적정'?'selected':''}>적정</option><option ${r.result==='보완'?'selected':''}>보완</option><option ${r.result==='해당없음'?'selected':''}>해당없음</option></select></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><select class="f-riskType">${RISK7.map(x=>`<option ${x===r.riskType?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})"><input class="f-photoTag" value="${r.photoTag||''}"></td>
+      ${fieldDefs.map(fd=>`<td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})">${renderFieldInputForAudit(fd, r.extras[fd.id])}</td>`).join('')}
+      <td class="auditDropCell" ondragover="allowDrop(event)" ondrop="dropOnRow(event,${i})">
         <div class="row">
           <button onclick="triggerCamera(${i})">사진 촬영</button>
           <button onclick="triggerGallery(${i})">사진 선택</button>
@@ -1199,7 +1220,7 @@ function renderRows(){
         <input class="hiddenInput" id="cameraInput_${i}" type="file" accept="image/*" capture="environment" onchange="attachFilesToRow(event, ${i}, true)">
         <input class="hiddenInput" id="galleryInput_${i}" type="file" accept="image/*" multiple onchange="attachFilesToRow(event, ${i}, false)">
         <div class="linkedThumbs">
-          ${linkedPhotosForRow(i).map(p=>`<div class="linkedThumb"><img src="${p.url}" title="${p.name}"><button class="unlinkBtn" onclick="unlinkPhoto('${p.id}')">×</button></div>`).join('') || '<div class="small">이 행에 연결된 사진 없음</div>'}
+          ${linkedPhotosForRow(i).map(p=>`<div class="linkedThumb"><img src="${p.url}" title="${p.name}"><button class="unlinkBtn" onclick="unlinkPhoto('${p.id}')">×</button></div>`).join('') || '<div class="small">이 행 아무 곳에나 미연결 사진을 드롭해 연결</div>'}
         </div>
       </td>
     </tr>`;
@@ -1331,13 +1352,31 @@ function formatFieldValueForText(fd, value){
   if(fd.type==='checkbox') return value ? 'Y' : 'N';
   return (value ?? '') === '' ? '-' : String(value);
 }
+
 function onDragPhoto(ev, photoId){
   hideHoverPreview();
+  ev.dataTransfer.effectAllowed = 'move';
   ev.dataTransfer.setData('text/plain', photoId);
 }
-function allowDrop(ev){ ev.preventDefault(); }
-function dropOnRow(ev,rowIndex){ hideHoverPreview(); ev.preventDefault(); const photoId=ev.dataTransfer.getData('text/plain'); directConnectPhoto(photoId, rowIndex); }
+function clearAuditDropHighlight(){
+  document.querySelectorAll('.auditDropRow.dragover').forEach(el=>el.classList.remove('dragover'));
+}
+function allowDrop(ev){
+  ev.preventDefault();
+  clearAuditDropHighlight();
+  const row = ev.target && ev.target.closest ? ev.target.closest('.auditDropRow') : null;
+  if(row) row.classList.add('dragover');
+}
+function dropOnRow(ev,rowIndex){
+  hideHoverPreview();
+  ev.preventDefault();
+  const photoId=ev.dataTransfer.getData('text/plain');
+  clearAuditDropHighlight();
+  directConnectPhoto(photoId, rowIndex);
+}
 function directConnectPhoto(photoId, rowIndex){
+
+
   hideHoverPreview();
   if(rowIndex==='' || rowIndex===null || rowIndex===undefined) return;
   const p=photos.find(x=>x.id===photoId);
@@ -1477,8 +1516,7 @@ function downloadChecklistJSON(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=`checklist_${Date.now()}.json`;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 300);
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 500);
   log(`체크리스트 JSON 저장 완료: ${rows.length}행 / 사용자 열 ${fieldDefs.length}개`);
 }
 async function importChecklistJSON(event){
@@ -1525,7 +1563,7 @@ async function createSessionZipBlobAndName(){
     zip.file(`linked_photos/${safeName}`, blob);
   }
   const blob = await zip.generateAsync({type:'blob'});
-  const name = `audit_middle_save_${Date.now()}.zip`;
+  const name = `audit_middle_save_${Date.now()}_${Math.random().toString(36).slice(2,6)}.zip`;
   return {blob, name, linkedCount: linked.length};
 }
 async function exportSessionZip(){
@@ -1534,8 +1572,7 @@ async function exportSessionZip(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=name;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 300);
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 500);
   log(`중간저장 ZIP 생성 완료: ${name} / 연결사진 ${linkedCount}장`);
 }
 async function sendSessionZipByEmail(){
@@ -1546,8 +1583,7 @@ async function sendSessionZipByEmail(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=name;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 300);
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 500);
 
   const subject = '현장 점검 모바일 중간 저장본';
   const body = `현장 점검 모바일 중간 저장본 입니다.\n반드시 "${name}"을 첨부해 주세요.`;
@@ -1610,6 +1646,7 @@ async function importSessionZip(event){
 }
 
 
+
 async function parseSessionZipFile(file){
   const zip = await JSZip.loadAsync(file);
   const sessionEntry = zip.file('session.json');
@@ -1618,33 +1655,45 @@ async function parseSessionZipFile(file){
 
   const importedFieldDefs = (session.fieldDefs||[]).map(fd=>({id:fd.id||uid('fd'), label:fd.label||'열', type:fd.type||'text', options:fd.options||[]}));
   mergeFieldDefs(importedFieldDefs);
+
   const importedRows = (session.rows||[]).map(normalizeImportedRow);
   const importedPhotos = [];
   const photoMap = new Map();
+
   Object.values(zip.files).forEach(entry=>{
     if(!entry.dir && entry.name.startsWith('linked_photos/')){
       const fileName = entry.name.split('/').pop();
       photoMap.set(fileName, entry);
     }
   });
+
   for(const p of (session.photos||[])){
     const fileName = String(p.name || '').replace(/[\/:*?"<>|]+/g,'_');
     const entry = photoMap.get(fileName);
     if(entry){
       const blob = await entry.async('blob');
       const url = URL.createObjectURL(blob);
-      let dataUrlCache='';
+      let dataUrlCache = '';
       try{ dataUrlCache = await blobToDataUrl(blob); }catch(e){ console.warn('parseSessionZipFile cache 실패', e); }
       importedPhotos.push({
         id: p.id || `IMP_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
         name: p.name || fileName,
         rowIndex: p.rowIndex || '',
-        blob, file:null, url, dataUrlCache
+        blob,
+        file: null,
+        url,
+        dataUrlCache
       });
     }
   }
-  return { importedRows, importedPhotos };
+
+  return {
+    audit: session.audit || {},
+    importedRows,
+    importedPhotos
+  };
 }
+
 
 function mergeFieldDefs(imported){
   imported.forEach(fd=>{
@@ -1655,13 +1704,22 @@ function mergeFieldDefs(imported){
   });
   rows = rows.map(r=>ensureRowExtras(r));
 }
+
+
 async function importMultipleSessionZips(event){
-  const files = [...event.target.files];
+  const files = [...(event.target.files || [])];
   if(!files.length) return;
-  let totalRows = 0, totalPhotos = 0;
+
+  const existingRowCount = rows.length;
+  const existingPhotoCount = photos.length;
+  let addedRows = 0;
+  let addedPhotos = 0;
+
   const useFirstHeader = rows.length === 0 && !evalYear.value && !evalHalf.value && !division.value && !bu.value && !site.value;
+
   for(let fileIndex=0; fileIndex<files.length; fileIndex++){
     const parsed = await parseSessionZipFile(files[fileIndex]);
+
     if(useFirstHeader && fileIndex === 0){
       evalYear.value = parsed.audit.year || '';
       evalHalf.value = parsed.audit.half || '';
@@ -1669,27 +1727,49 @@ async function importMultipleSessionZips(event){
       updateBu(); setSelectValue(bu, parsed.audit.bu || '');
       updateSite(); setSelectValue(site, parsed.audit.site || '');
     }
+
     const rowOffset = rows.length;
-    parsed.rows.forEach(r=>{ ensureRowExtras(r); rows.push(r); });
-    parsed.photos.forEach(p=>{
-      let shifted = p.rowIndex;
-      if(shifted !== '' && shifted !== null && shifted !== undefined){ shifted = String(Number(shifted) + rowOffset); }
-      else shifted = '';
-      photos.push({
-        id: p.id + '_' + Math.random().toString(36).slice(2,6),
-        name: p.name,
-        rowIndex: shifted,
-        blob: p.blob, file: null, url: p.url
-      });
+
+    (parsed.importedRows || []).forEach(r=>{
+      rows.push(ensureRowExtras({...r}));
+      addedRows++;
     });
-    totalRows += parsed.rows.length;
-    totalPhotos += parsed.photos.length;
+
+    (parsed.importedPhotos || []).forEach(p=>{
+      let shifted = p.rowIndex;
+      if(shifted !== '' && shifted !== null && shifted !== undefined){
+        shifted = String(Number(shifted) + rowOffset);
+      }else{
+        shifted = '';
+      }
+
+      photos.push({
+        id: (p.id || 'IMP') + '_' + Math.random().toString(36).slice(2,8),
+        name: p.name || 'photo.jpg',
+        rowIndex: shifted,
+        blob: p.blob || null,
+        file: null,
+        url: p.url || '',
+        dataUrlCache: p.dataUrlCache || ''
+      });
+      addedPhotos++;
+    });
   }
+
   rows = rows.map(r=>ensureRowExtras(r));
-  renderFieldDefs(); renderEditor(); renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); validateHeader();
-  log(`취합 불러오기 완료: ZIP ${files.length}개 / 행 ${totalRows}개 / 연결사진 ${totalPhotos}장 추가 / 사용자 열 ${fieldDefs.length}개`);
+  renderFieldDefs();
+  renderEditor();
+  renderRows();
+  renderPhotosHub();
+  rebuildBriefingItems();
+  renderBriefingList();
+  validateHeader();
+
+  log(`취합 누적 완료: ZIP ${files.length}개 / 기존 행 ${existingRowCount}개 → 현재 ${rows.length}개 / 기존 사진 ${existingPhotoCount}장 → 현재 ${photos.length}장 / 추가 행 ${addedRows}개 / 추가 사진 ${addedPhotos}장`);
   event.target.value = '';
 }
+
+
 
 function buildRawdbRowsWithPhotoNames(){
   syncRowsFromTable();
@@ -2317,13 +2397,13 @@ function renderTeamMembers(){
           <button class="collapse-toggle" onclick="removeTeamMember('${tm.id}')">삭제</button>
         </div>
       </div>
-      <div class="team-card-grid" style="margin-top:0">
+      <div class="team-card-grid" style="margin-top:10px">
         <div>
           <div class="small">팀원명</div>
           <input class="tm-name" value="${tm.name||''}" placeholder="팀원명">
-          <div class="small" style="margin-top:0">직급</div>
+          <div class="small" style="margin-top:10px">직급</div>
           <input class="tm-rank" value="${tm.rank||''}" placeholder="예: 과장, 대리">
-          <div class="small" style="margin-top:0">사번(숫자 6자리)</div>
+          <div class="small" style="margin-top:10px">사번(숫자 6자리)</div>
           <input class="tm-empno" inputmode="numeric" value="${tm.empNo||''}" placeholder="123456">
           <div class="mini-note">숫자만 허용, 6자리까지만 저장</div>
         </div>
@@ -2781,6 +2861,48 @@ async function downloadPhotosAsZip(){
 }
 
 
+
+(function setupClientSideSecurity(){
+  // Right click / context menu block
+  document.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+  });
+
+  // Common devtools / source-view shortcuts block, while allowing copy/paste
+  document.addEventListener('keydown', function(e){
+    const key = (e.key || '').toLowerCase();
+
+    // Allow copy / paste / cut / select all / find / refresh
+    if((e.ctrlKey || e.metaKey) && ['c','v','x','a','f','r'].includes(key)) return;
+    if((e.ctrlKey || e.metaKey) && e.shiftKey && key === 'v') return; // paste without formatting
+    if(key === 'f5') return;
+
+    const blocked =
+      key === 'f12' ||
+      ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','j','c','k','u','s'].includes(key)) ||
+      ((e.ctrlKey || e.metaKey) && ['u'].includes(key));
+
+    if(blocked){
+      e.preventDefault();
+      e.stopPropagation();
+      alert('이 동작은 제한되어 있습니다.');
+      return false;
+    }
+  }, true);
+
+  // Drag start block for generic page content but keep form interactions normal
+  document.addEventListener('dragstart', function(e){
+    const t = e.target;
+    if(t && t.closest && (t.closest('input, textarea, [contenteditable="true"]'))) return;
+    // keep existing draggable photo tiles working
+    if(t && t.closest && t.closest('.photoTile')) return;
+    e.preventDefault();
+  });
+
+  // Text selection is allowed by design for copy/paste.
+})();
+
+document.addEventListener('dragend', ()=>{ try{ clearAuditDropHighlight(); }catch(e){} });
 clearAll();
 setTimeout(()=>{
   try{ loadCiAssetsFromLocal(); }catch(e){}
