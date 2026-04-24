@@ -556,6 +556,53 @@
 
   .auditDropRow{transition: background-color .12s ease, outline-color .12s ease;}
   .auditDropRow.dragover{background:rgba(86,147,255,.05); outline:1px dashed rgba(86,147,255,.30); outline-offset:-2px;}
+
+  .progressOverlay{
+    position:fixed; inset:0; z-index:12000;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(7,17,30,.42); backdrop-filter:blur(4px);
+  }
+  .progressBox{
+    width:min(420px, calc(100vw - 32px));
+    background:#fff; border:1px solid var(--border);
+    border-radius:20px; padding:18px;
+    box-shadow:0 24px 70px rgba(8,20,40,.28);
+  }
+  .progressTitle{font-weight:800;font-size:16px;margin-bottom:8px}
+  .progressText{font-size:13px;color:#53657a;margin-bottom:12px;line-height:1.45}
+  .progressTrack{
+    width:100%;height:12px;border-radius:999px;
+    background:#e8eef7;overflow:hidden;
+  }
+  .progressBar{
+    width:0%;height:100%;border-radius:999px;
+    background:linear-gradient(90deg,#5b8def,#6ee7b7);
+    transition:width .18s ease;
+  }
+  .progressPercent{margin-top:8px;text-align:right;font-weight:800;font-size:13px}
+
+
+  .progressOverlay{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .progressOverlay.active{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .progressBox{
+    transform:translateY(6px) scale(.98);
+    transition:transform .18s ease;
+  }
+  .progressOverlay.active .progressBox{
+    transform:translateY(0) scale(1);
+  }
+  .progressDone{
+    color:#0f9f6e;
+    font-weight:800;
+  }
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -564,6 +611,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+
+<div class="progressOverlay" id="progressOverlay">
+  <div class="progressBox">
+    <div class="progressTitle" id="progressTitle">처리 중</div>
+    <div class="progressText" id="progressText">잠시만 기다려 주세요.</div>
+    <div class="progressTrack"><div class="progressBar" id="progressBar"></div></div>
+    <div class="progressPercent" id="progressPercent">0%</div>
+  </div>
+</div>
+
 </div>
 
 <div class="topbar-shell"><div class="bi-slot" id="biLogoSlot">CI LOGO</div><div class="tabbar">
@@ -1275,46 +1332,71 @@ function syncRowsFromTable(){
 function triggerCamera(rowIndex){ document.getElementById(`cameraInput_${rowIndex}`).click(); }
 function triggerGallery(rowIndex){ document.getElementById(`galleryInput_${rowIndex}`).click(); }
 
+async 
 async function attachFilesToRow(event, rowIndex, isCamera){
   const files=[...event.target.files];
   if(!files.length) return;
-  const items = await Promise.all(files.map(async (file, idx)=>{
-    const url=URL.createObjectURL(file);
-    let dataUrlCache='';
-    try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('dataUrlCache 생성 실패', e); }
-    return {
-      id:`ROW${rowIndex}_${Date.now()}_${idx}`,
-      file, blob:file,
-      name:file.name || `capture_${Date.now()}_${idx}.jpg`,
-      url, rowIndex:String(rowIndex),
-      dataUrlCache
-    };
-  }));
-  photos.push(...items);
-  renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
-  log(`${rowIndex+1}행에 ${files.length}장 ${isCamera?'촬영':'선택'} 연결 완료`);
-  event.target.value='';
+  showProgress(isCamera ? '촬영 사진 연결 중' : '사진 선택 연결 중', `0/${files.length}장 준비 중`);
+  try{
+    for(let idx=0; idx<files.length; idx++){
+      const file = files[idx];
+      const url=URL.createObjectURL(file);
+      let dataUrlCache='';
+      try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('사진 캐시 생성 실패', e); }
+      photos.push({
+        id:`ROW${rowIndex}_${Date.now()}_${idx}`,
+        file, blob:file,
+        name:file.name || `capture_${Date.now()}_${idx}.jpg`,
+        url, rowIndex:String(rowIndex),
+        dataUrlCache
+      });
+      updateProgress(idx+1, files.length, `${idx+1}/${files.length}장 연결 중`);
+      await nextFrame();
+    }
+    renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+    log(`${rowIndex+1}행에 ${files.length}장 ${isCamera?'촬영':'선택'} 연결 완료`);
+  }catch(e){
+    log(`사진 연결 오류: ${e.message}`);
+    alert('사진 연결 중 오류: ' + e.message);
+  }finally{
+    hideProgress();
+    event.target.value='';
+  }
 }
+
 
 
 function linkedPhotosForRow(rowIndex){ return photos.filter(p=>String(p.rowIndex)===String(rowIndex)); }
 function unlinkPhoto(photoId){ hideHoverPreview(); const p=photos.find(x=>x.id===photoId); if(p){ p.rowIndex=''; renderRows(); renderPhotosHub(); rebuildBriefingItems(); renderBriefingList(); log('사진 연결 해제 완료'); } }
 
 
+async 
 async function importPhotosAsUnlinked(event){
   const files=[...event.target.files];
   if(!files.length) return;
-  const items = await Promise.all(files.map(async (file,idx)=>{
-    const url=URL.createObjectURL(file);
-    let dataUrlCache='';
-    try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('dataUrlCache 생성 실패', e); }
-    return {id:`UP${Date.now()}_${idx}`,file,blob:file,name:file.name,url,rowIndex:'',dataUrlCache};
-  }));
-  photos.push(...items);
-  renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
-  log(`미연결 사진 ${files.length}장 불러오기 완료`);
-  event.target.value='';
+  showProgress('사진 불러오는 중', `0/${files.length}장 준비 중`);
+  try{
+    for(let idx=0; idx<files.length; idx++){
+      const file = files[idx];
+      const url=URL.createObjectURL(file);
+      let dataUrlCache='';
+      // 너무 큰 파일에서 메모리 부담을 줄이기 위해 dataUrlCache는 실패해도 계속 진행
+      try{ dataUrlCache = await blobToDataUrl(file); }catch(e){ console.warn('사진 캐시 생성 실패', e); }
+      photos.push({id:`UP${Date.now()}_${idx}`,file,blob:file,name:file.name,url,rowIndex:'',dataUrlCache});
+      updateProgress(idx+1, files.length, `${idx+1}/${files.length}장 불러오는 중`);
+      await nextFrame();
+    }
+    renderPhotosHub(); rebuildBriefingItems(); renderBriefingList();
+    log(`미연결 사진 ${files.length}장 불러오기 완료`);
+  }catch(e){
+    log(`사진 불러오기 오류: ${e.message}`);
+    alert('사진 불러오기 중 오류: ' + e.message);
+  }finally{
+    hideProgress();
+    event.target.value='';
+  }
 }
+
 
 function unlinkedPhotos(){ return photos.filter(p=>p.rowIndex===''||p.rowIndex===null||p.rowIndex===undefined); }
 function renderPhotosHub(){
@@ -1455,6 +1537,47 @@ function compressImage(file,maxSize,quality){
 }
 
 
+
+
+function showProgress(title, text){
+  const overlay = document.getElementById('progressOverlay');
+  if(!overlay) return;
+  document.getElementById('progressTitle').textContent = title || '처리 중';
+  document.getElementById('progressText').textContent = text || '잠시만 기다려 주세요. 창을 닫지 마세요.';
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressPercent').textContent = '0%';
+  overlay.style.display = 'flex';
+  requestAnimationFrame(()=>overlay.classList.add('active'));
+}
+function updateProgress(done, total, text){
+  const overlay = document.getElementById('progressOverlay');
+  if(!overlay) return;
+  const pct = total ? Math.max(0, Math.min(100, Math.round((done/total)*100))) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPercent').textContent = pct + '%';
+  if(text) document.getElementById('progressText').textContent = text + ' · 창을 닫지 마세요.';
+}
+function completeProgress(text){
+  const overlay = document.getElementById('progressOverlay');
+  if(!overlay) return;
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('progressPercent').textContent = '100%';
+  document.getElementById('progressText').innerHTML = '<span class="progressDone">✓ ' + (text || '완료되었습니다.') + '</span>';
+}
+function hideProgress(delay=250){
+  const overlay = document.getElementById('progressOverlay');
+  if(!overlay) return;
+  setTimeout(()=>{
+    overlay.classList.remove('active');
+    setTimeout(()=>{ overlay.style.display = 'none'; }, 180);
+  }, delay);
+}
+function nextFrame(){
+  return new Promise(resolve => requestAnimationFrame(()=>resolve()));
+}
+
+
+
 async function saveLinkedPhotosOnly(){
   if(!('showDirectoryPicker' in window)){
     photoWarn.innerHTML='<span class="warn">이 기능은 Chrome/Edge 계열 브라우저에서 지원됩니다. 모바일에서는 ZIP 저장을 권장합니다.</span>';
@@ -1477,11 +1600,12 @@ async function saveLinkedPhotosOnly(){
   const quality = Number((document.getElementById('quality')||{}).value || 0.75);
 
   try{
-    // 중요: showDirectoryPicker는 반드시 버튼 클릭 직후의 user gesture 안에서 먼저 실행되어야 함
+    // 보호 규칙: 이 함수는 데스크톱 폴더 저장 핵심 함수입니다. showDirectoryPicker는 반드시 클릭 직후 먼저 실행.
     const dir = await window.showDirectoryPicker({mode:'readwrite'});
     const originalsDir = await dir.getDirectoryHandle('originals',{create:true});
     const compressedDir = await dir.getDirectoryHandle('compressed',{create:true});
 
+    showProgress('원본+압축본 저장', `0/${linked.length}장 준비 중`);
     photoWarn.innerHTML='<span class="ok">폴더 선택 완료. 사진 파일 준비 및 저장 중입니다.</span>';
     log(`원본+압축본 저장 시작: 연결사진 ${linked.length}장`);
 
@@ -1489,6 +1613,7 @@ async function saveLinkedPhotosOnly(){
     linked.forEach(p=>{ byRow[p.rowIndex]=byRow[p.rowIndex]||[]; byRow[p.rowIndex].push(p); });
 
     const jobs = [];
+    let prepared = 0;
     for(const rowIdx of Object.keys(byRow)){
       const arr = byRow[rowIdx];
       for(let i=0;i<arr.length;i++){
@@ -1527,11 +1652,16 @@ async function saveLinkedPhotosOnly(){
           : compressedBlob;
 
         jobs.push({name:newName, originalBlob:originalStable, compressedBlob:compressedStable});
+        prepared++;
+        updateProgress(prepared, linked.length, `사진 준비 중... ${prepared}/${linked.length}`);
+        await nextFrame();
       }
     }
 
     let savedCount = 0;
     let failCount = 0;
+    const totalWrites = jobs.length * 2;
+    let writeDone = 0;
 
     async function writeFileSafely(folderHandle, fileName, blob){
       try{
@@ -1551,9 +1681,16 @@ async function saveLinkedPhotosOnly(){
     for(const job of jobs){
       try{
         await writeFileSafely(originalsDir, job.name, job.originalBlob);
+        writeDone++;
+        updateProgress(writeDone, totalWrites, `원본 저장 중... ${Math.ceil(writeDone/2)}/${jobs.length}`);
+        await nextFrame();
+
         await writeFileSafely(compressedDir, job.name, job.compressedBlob);
+        writeDone++;
         savedCount++;
+        updateProgress(writeDone, totalWrites, `압축본 저장 중... ${savedCount}/${jobs.length}`);
         photoWarn.innerHTML=`<span class="ok">사진 저장 중... ${savedCount}/${jobs.length}</span>`;
+        await nextFrame();
       }catch(e){
         failCount++;
         console.error('사진 저장 실패:', job.name, e);
@@ -1566,11 +1703,14 @@ async function saveLinkedPhotosOnly(){
       return;
     }
 
+    completeProgress(`저장 완료: ${savedCount}장`);
     photoWarn.innerHTML=`<span class="ok">연결 완료된 사진 ${savedCount}장 저장 완료. originals ${savedCount}장 / compressed ${savedCount}장. 미연결 ${unlinkedCount}장은 제외되었습니다.</span>`;
     log(`원본+압축본 저장 완료: ${savedCount}장`);
   }catch(e){
     photoWarn.innerHTML=`<span class="warn">사진 저장 중 오류: ${e.message}</span>`;
     log(`원본+압축본 저장 오류: ${e.message}`);
+  }finally{
+    hideProgress(500);
   }
 }
 
@@ -2977,6 +3117,347 @@ setTimeout(()=>{
   try{ previewCi('logo'); }catch(e){}
 }, 0);
 
+
 </script>
+
+<script id="ci-hidden-independent-guard">
+(function(){
+  function stripPrefix(v){
+    return String(v || '').trim().replace(/\s+/g,'').replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/,'');
+  }
+  function dataUri(raw){
+    const pure = stripPrefix(raw);
+    return pure ? 'data:image/png;base64,' + pure : '';
+  }
+  function renderCiLogoGuard(){
+    const slot = document.getElementById('biLogoSlot');
+    const input = document.getElementById('ciBase64Input');
+    if(!slot || !input) return;
+    const pure = stripPrefix(input.value);
+    input.value = pure;
+    if(pure){
+      slot.innerHTML = '<img src="' + dataUri(pure) + '" alt="CI Logo">';
+    }else{
+      slot.textContent = 'CI LOGO';
+    }
+  }
+  function openHiddenGuard(){
+    const overlay = document.getElementById('hiddenAdminOverlay');
+    if(!overlay) return;
+    overlay.style.display = 'flex';
+    renderCiLogoGuard();
+    try{ if(typeof renderTeamMembers === 'function') renderTeamMembers(); }catch(e){}
+    try{ if(typeof previewCi === 'function'){ previewCi('logo'); previewCi('favicon'); } }catch(e){}
+  }
+  function closeHiddenGuard(){
+    const overlay = document.getElementById('hiddenAdminOverlay');
+    if(overlay) overlay.style.display = 'none';
+  }
+  function bindGuards(){
+    renderCiLogoGuard();
+
+    const input = document.getElementById('ciBase64Input');
+    if(input && !input.__ciGuardBound){
+      input.__ciGuardBound = true;
+      input.addEventListener('input', renderCiLogoGuard);
+      input.addEventListener('change', renderCiLogoGuard);
+      input.addEventListener('blur', renderCiLogoGuard);
+    }
+
+    const footer = document.getElementById('copyrightFooter');
+    if(footer && !footer.__independentHiddenBound){
+      footer.__independentHiddenBound = true;
+      footer.addEventListener('click', function(e){
+        window.__auditFooterClick = (window.__auditFooterClick || 0) + 1;
+        clearTimeout(window.__auditFooterTimer);
+        window.__auditFooterTimer = setTimeout(function(){ window.__auditFooterClick = 0; }, 1800);
+        if(window.__auditFooterClick >= 7){
+          window.__auditFooterClick = 0;
+          openHiddenGuard();
+        }
+      }, true);
+    }
+
+    const overlay = document.getElementById('hiddenAdminOverlay');
+    if(overlay && !overlay.__independentCloseBound){
+      overlay.__independentCloseBound = true;
+      overlay.addEventListener('click', function(e){
+        if(e.target === overlay) closeHiddenGuard();
+      }, true);
+    }
+
+    // 전역 백업 함수 노출
+    window.__openHiddenAdminGuard = openHiddenGuard;
+    window.__renderCiLogoGuard = renderCiLogoGuard;
+  }
+
+  document.addEventListener('keydown', function(e){
+    const t = e.target;
+    const isTyping = t && (
+      t.tagName === 'INPUT' ||
+      t.tagName === 'TEXTAREA' ||
+      t.tagName === 'SELECT' ||
+      t.isContentEditable
+    );
+    if(isTyping) return;
+
+    const key = String(e.key || '').toUpperCase();
+    if(!e.shiftKey || !['S','H','E'].includes(key)) return;
+
+    window.__auditHiddenSeq = window.__auditHiddenSeq || [];
+    window.__auditHiddenSeq.push(key);
+    if(window.__auditHiddenSeq.length > 3) window.__auditHiddenSeq = window.__auditHiddenSeq.slice(-3);
+    clearTimeout(window.__auditHiddenSeqTimer);
+    window.__auditHiddenSeqTimer = setTimeout(function(){ window.__auditHiddenSeq = []; }, 2000);
+
+    if(window.__auditHiddenSeq.join('') === 'SHE'){
+      window.__auditHiddenSeq = [];
+      openHiddenGuard();
+    }
+  }, true);
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindGuards);
+  }else{
+    bindGuards();
+  }
+  window.addEventListener('load', bindGuards);
+  setTimeout(bindGuards, 100);
+  setTimeout(bindGuards, 500);
+})();
+</script>
+
+
+
+<script id="team-member-manager-hard-fix">
+(function(){
+  function uid(){
+    return 'tm_' + Math.random().toString(36).slice(2,9);
+  }
+
+  function normalizeEmpNo(v){
+    return String(v || '').replace(/\D/g,'').slice(0,6);
+  }
+
+  function normalizePhotoSrc(v){
+    let s = String(v || '').trim();
+    if(!s) return '';
+    s = s.replace(/\s+/g,'');
+    if(/^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(s)) return s;
+    if(/^[A-Za-z0-9+/=]+$/.test(s)) return 'data:image/jpeg;base64,' + s;
+    return s;
+  }
+
+  function defaultMember(){
+    return {
+      id: uid(),
+      name: '',
+      rank: '',
+      empNo: '',
+      email: '',
+      photoBase64: '',
+      base64Open: false
+    };
+  }
+
+  function getMembers(){
+    if(!Array.isArray(window.teamMembers)) window.teamMembers = [];
+    if(!window.teamMembers.length){
+      try{
+        const raw = localStorage.getItem('audit_team_members_v1');
+        if(raw){
+          const parsed = JSON.parse(raw);
+          if(Array.isArray(parsed)) window.teamMembers = parsed;
+        }
+      }catch(e){}
+    }
+    if(!window.teamMembers.length) window.teamMembers = [defaultMember()];
+    return window.teamMembers;
+  }
+
+  function saveMembers(){
+    try{
+      localStorage.setItem('audit_team_members_v1', JSON.stringify(getMembers()));
+      if(typeof log === 'function') log('팀원관리 저장 완료: ' + getMembers().length + '명');
+    }catch(e){
+      if(typeof log === 'function') log('팀원관리 저장 오류: ' + e.message);
+    }
+  }
+
+  function renderTeamManager(){
+    const wrap = document.getElementById('teamMemberList');
+    if(!wrap) return;
+
+    const members = getMembers();
+    wrap.innerHTML = members.map(function(tm, idx){
+      const title = tm.name && String(tm.name).trim() ? tm.name : (idx+1) + '번 팀원';
+      const photoSrc = normalizePhotoSrc(tm.photoBase64 || '');
+      return `
+      <div class="team-card" data-team-id="${tm.id}">
+        <div class="row" style="justify-content:space-between">
+          <div><b class="team-card-title">${title}</b></div>
+          <div class="row">
+            <button type="button" class="collapse-toggle" data-team-action="toggle" data-id="${tm.id}">${tm.base64Open ? 'Base64 접기' : 'Base64 펼치기'}</button>
+            <button type="button" class="collapse-toggle" data-team-action="remove" data-id="${tm.id}">삭제</button>
+          </div>
+        </div>
+        <div class="team-card-grid" style="margin-top:10px">
+          <div>
+            <div class="small">팀원명</div>
+            <input class="tm-name" data-id="${tm.id}" value="${tm.name || ''}" placeholder="팀원명">
+            <div class="small" style="margin-top:10px">직급</div>
+            <input class="tm-rank" data-id="${tm.id}" value="${tm.rank || ''}" placeholder="예: 과장, 대리">
+            <div class="small" style="margin-top:10px">사번(숫자 6자리)</div>
+            <input class="tm-empno" data-id="${tm.id}" inputmode="numeric" value="${tm.empNo || ''}" placeholder="123456">
+            <div class="mini-note">숫자만 허용, 6자리까지만 저장</div>
+          </div>
+          <div>
+            <div class="small">이메일</div>
+            <input class="tm-email" data-id="${tm.id}" type="email" value="${tm.email || ''}" placeholder="example@company.com">
+          </div>
+          <div>
+            <div class="small">사진 Base64 코드 입력칸</div>
+            <div class="base64-wrap ${tm.base64Open ? 'open' : ''}">
+              <textarea class="tm-base64" data-id="${tm.id}" placeholder="data:image/png;base64,....">${tm.photoBase64 || ''}</textarea>
+              <div class="mini-note">기본 접힘 상태입니다. data:image/... 형식 전체를 붙여 넣어 주세요.</div>
+            </div>
+          </div>
+          <div>
+            <div class="small">팀원사진미리보기</div>
+            <div class="team-photo-box">${photoSrc ? `<img src="${photoSrc}" alt="preview" onerror="this.closest('.team-photo-box').innerHTML='<div class=&quot;small&quot;>Base64 형식 확인 필요</div>'">` : '<div class="small">사진 미리보기 없음</div>'}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function syncMemberFromElement(el){
+    const id = el.getAttribute('data-id');
+    const members = getMembers();
+    const tm = members.find(function(x){ return x.id === id; });
+    if(!tm) return;
+
+    if(el.classList.contains('tm-name')) tm.name = el.value;
+    if(el.classList.contains('tm-rank')) tm.rank = el.value;
+    if(el.classList.contains('tm-empno')){
+      tm.empNo = normalizeEmpNo(el.value);
+      el.value = tm.empNo;
+    }
+    if(el.classList.contains('tm-email')) tm.email = el.value;
+    if(el.classList.contains('tm-base64')) tm.photoBase64 = el.value;
+
+    saveMembers();
+  }
+
+  function addMember(){
+    getMembers().push(defaultMember());
+    saveMembers();
+    renderTeamManager();
+  }
+
+  function removeMember(id){
+    const members = getMembers();
+    const idx = members.findIndex(function(x){ return x.id === id; });
+    if(idx >= 0) members.splice(idx, 1);
+    if(!members.length) members.push(defaultMember());
+    saveMembers();
+    renderTeamManager();
+  }
+
+  function toggleMemberBase64(id){
+    const tm = getMembers().find(function(x){ return x.id === id; });
+    if(!tm) return;
+    tm.base64Open = !tm.base64Open;
+    saveMembers();
+    renderTeamManager();
+  }
+
+  // 기존 전역 함수들을 확실하게 덮어써서 버튼 onclick이 바로 동작하게 고정
+  window.renderTeamMembers = renderTeamManager;
+  window.loadTeamMembersFromLocal = function(){
+    getMembers();
+    renderTeamManager();
+  };
+  window.saveTeamMembersToLocal = function(){
+    saveMembers();
+    renderTeamManager();
+  };
+  window.addTeamMember = addMember;
+  window.removeTeamMember = removeMember;
+  window.toggleBase64 = toggleMemberBase64;
+
+  const oldOpen = window.openHiddenAdmin;
+  window.openHiddenAdmin = function(){
+    try{
+      const overlay = document.getElementById('hiddenAdminOverlay');
+      if(overlay) overlay.style.display = 'flex';
+      if(typeof renderCiAssets === 'function') renderCiAssets();
+      if(typeof previewCi === 'function'){ previewCi('logo'); previewCi('favicon'); }
+    }catch(e){}
+    renderTeamManager();
+  };
+
+  document.addEventListener('input', function(e){
+    const el = e.target;
+    if(el && el.matches && el.matches('#teamMemberList input, #teamMemberList textarea')){
+      syncMemberFromElement(el);
+      const card = el.closest('.team-card');
+      if(card){
+        const id = card.getAttribute('data-team-id');
+        const tm = getMembers().find(function(x){ return x.id === id; });
+        const title = card.querySelector('.team-card-title');
+        if(title && tm) title.textContent = tm.name && String(tm.name).trim() ? tm.name : '팀원';
+      }
+    }
+  }, true);
+
+  document.addEventListener('change', function(e){
+    const el = e.target;
+    if(el && el.matches && el.matches('#teamMemberList input, #teamMemberList textarea')){
+      syncMemberFromElement(el);
+    }
+  }, true);
+
+  document.addEventListener('click', function(e){
+    const actionBtn = e.target && e.target.closest ? e.target.closest('[data-team-action]') : null;
+    if(actionBtn){
+      e.preventDefault();
+      e.stopPropagation();
+      const id = actionBtn.getAttribute('data-id');
+      const action = actionBtn.getAttribute('data-team-action');
+      if(action === 'toggle') toggleMemberBase64(id);
+      if(action === 'remove') removeMember(id);
+      return;
+    }
+
+    const btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if(btn && btn.textContent && btn.textContent.trim() === '팀원 추가'){
+      e.preventDefault();
+      e.stopPropagation();
+      addMember();
+      return;
+    }
+
+    if(btn && btn.textContent && btn.textContent.trim() === '저장'){
+      saveMembers();
+      return;
+    }
+  }, true);
+
+  function boot(){
+    getMembers();
+    renderTeamManager();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  }else{
+    boot();
+  }
+  window.addEventListener('load', boot);
+  setTimeout(boot, 300);
+})();
+</script>
+
 </body>
 </html>
