@@ -1453,52 +1453,119 @@ function compressImage(file,maxSize,quality){
     img.src=url;
   });
 }
+
+
 async function saveLinkedPhotosOnly(){
   if(!('showDirectoryPicker' in window)){
-    photoWarn.innerHTML='<span class="warn">이 기능은 Chrome/Edge 계열 브라우저에서 지원됩니다.</span>';
+    photoWarn.innerHTML='<span class="warn">이 기능은 Chrome/Edge 계열 브라우저에서 지원됩니다. 모바일에서는 ZIP 저장을 권장합니다.</span>';
     log('원본+압축본 저장 실패: 브라우저 미지원');
     return;
   }
+
   syncRowsFromTable();
-  const linked=photos.filter(p=>p.rowIndex!=='' && p.rowIndex!==null && p.rowIndex!==undefined);
-  const unlinkedCount=photos.length-linked.length;
+
+  const linked = photos.filter(p=>p.rowIndex!=='' && p.rowIndex!==null && p.rowIndex!==undefined);
+  const unlinkedCount = photos.length - linked.length;
+
   if(!linked.length){
     photoWarn.innerHTML='<span class="warn">연결 완료된 사진이 없습니다.</span>';
     log('원본+압축본 저장 실패: 연결된 사진 없음');
     return;
   }
+
+  const maxSize = Number((document.getElementById('maxSize')||{}).value || 0);
+  const quality = Number((document.getElementById('quality')||{}).value || 0.75);
+
   try{
-    const dir = await window.showDirectoryPicker();
+    // 중요: showDirectoryPicker는 반드시 버튼 클릭 직후의 user gesture 안에서 먼저 실행되어야 함
+    const dir = await window.showDirectoryPicker({mode:'readwrite'});
     const originalsDir = await dir.getDirectoryHandle('originals',{create:true});
     const compressedDir = await dir.getDirectoryHandle('compressed',{create:true});
-    const maxSize = Number((document.getElementById('maxSize')||{}).value || 0);
-    const quality = Number((document.getElementById('quality')||{}).value || 0.75);
 
-    const byRow={};
+    photoWarn.innerHTML='<span class="ok">폴더 선택 완료. 사진 파일 준비 및 저장 중입니다.</span>';
+    log(`원본+압축본 저장 시작: 연결사진 ${linked.length}장`);
+
+    const byRow = {};
     linked.forEach(p=>{ byRow[p.rowIndex]=byRow[p.rowIndex]||[]; byRow[p.rowIndex].push(p); });
 
-    let savedCount=0;
+    const jobs = [];
     for(const rowIdx of Object.keys(byRow)){
-      const arr=byRow[rowIdx];
+      const arr = byRow[rowIdx];
       for(let i=0;i<arr.length;i++){
-        const p=arr[i];
-        const newName=buildPhotoFilename(p,i);
-        let originalBlob = p.blob || p.file;
-        if(!originalBlob){
-          const res=await fetch(p.url);
-          originalBlob=await res.blob();
+        const p = arr[i];
+        let newName = buildPhotoFilename(p,i);
+        if(!newName){
+          const rowNo = String(Number(rowIdx)+1).padStart(3,'0');
+          const seq = String(i+1).padStart(3,'0');
+          newName = `AUDIT_${rowNo}_${seq}.jpg`;
         }
-        const oh=await originalsDir.getFileHandle(newName,{create:true});
-        const ow=await oh.createWritable();
-        await ow.write(originalBlob); await ow.close();
 
-        const compressedBlob = await compressImage(originalBlob, maxSize, quality);
-        const ch=await compressedDir.getFileHandle(newName,{create:true});
-        const cw=await ch.createWritable();
-        await cw.write(compressedBlob); await cw.close();
-        savedCount++;
+        let originalBlob = p.blob || p.file || null;
+        if(!originalBlob && p.dataUrlCache){
+          originalBlob = await (await fetch(p.dataUrlCache)).blob();
+        }
+        if(!originalBlob && p.url){
+          const res = await fetch(p.url);
+          originalBlob = await res.blob();
+        }
+        if(!originalBlob) throw new Error(`${newName} 원본 이미지를 읽지 못했습니다.`);
+
+        const originalStable = originalBlob.slice
+          ? originalBlob.slice(0, originalBlob.size, originalBlob.type || 'image/jpeg')
+          : originalBlob;
+
+        let compressedBlob = null;
+        try{
+          compressedBlob = await compressImage(originalStable, maxSize, quality);
+        }catch(e){
+          console.warn('압축 실패, 원본으로 대체:', newName, e);
+          compressedBlob = originalStable;
+        }
+
+        const compressedStable = compressedBlob && compressedBlob.slice
+          ? compressedBlob.slice(0, compressedBlob.size, compressedBlob.type || 'image/jpeg')
+          : compressedBlob;
+
+        jobs.push({name:newName, originalBlob:originalStable, compressedBlob:compressedStable});
       }
     }
+
+    let savedCount = 0;
+    let failCount = 0;
+
+    async function writeFileSafely(folderHandle, fileName, blob){
+      try{
+        const fh = await folderHandle.getFileHandle(fileName,{create:true});
+        const writable = await fh.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      }catch(firstErr){
+        await new Promise(r=>setTimeout(r,120));
+        const fh = await folderHandle.getFileHandle(fileName,{create:true});
+        const writable = await fh.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      }
+    }
+
+    for(const job of jobs){
+      try{
+        await writeFileSafely(originalsDir, job.name, job.originalBlob);
+        await writeFileSafely(compressedDir, job.name, job.compressedBlob);
+        savedCount++;
+        photoWarn.innerHTML=`<span class="ok">사진 저장 중... ${savedCount}/${jobs.length}</span>`;
+      }catch(e){
+        failCount++;
+        console.error('사진 저장 실패:', job.name, e);
+      }
+    }
+
+    if(failCount){
+      photoWarn.innerHTML=`<span class="warn">일부 저장 완료: 성공 ${savedCount}장 / 실패 ${failCount}장. 미연결 ${unlinkedCount}장은 제외되었습니다.</span>`;
+      log(`원본+압축본 저장 일부 실패: 성공 ${savedCount}장 / 실패 ${failCount}장`);
+      return;
+    }
+
     photoWarn.innerHTML=`<span class="ok">연결 완료된 사진 ${savedCount}장 저장 완료. originals ${savedCount}장 / compressed ${savedCount}장. 미연결 ${unlinkedCount}장은 제외되었습니다.</span>`;
     log(`원본+압축본 저장 완료: ${savedCount}장`);
   }catch(e){
@@ -1506,6 +1573,7 @@ async function saveLinkedPhotosOnly(){
     log(`원본+압축본 저장 오류: ${e.message}`);
   }
 }
+
 
 function buildChecklistObject(){
   return {fieldDefs, rows};
